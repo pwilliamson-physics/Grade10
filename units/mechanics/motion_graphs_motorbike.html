@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion Graphs &mdash; A Motorbike&rsquo;s Journey</title>
+<style>
+
+  :root{
+    --navy:#173a5e; --teal:#0e7c86; --teal-dark:#0a5b62; --amber:#d98324;
+    --soft-blue:#eaf3fb; --soft-amber:#fdf1e2; --soft-green:#eaf7ee; --soft-grey:#f4f6f8;
+    --line:#b9c6d3; --ink:#1f2933; --border:#d7e0e8;
+    --purple:#6b4c9a; --soft-purple:#f1ebf9;
+    --good:#2f8f4e; --bad:#c0392b; --soft-bad:#fbebea;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:#f7f9fb; line-height:1.55; font-size:16.5px; padding-top:56px;}
+  .layout{display:flex; min-height:calc(100vh - 56px);}
+  nav.sidebar{width:250px; flex-shrink:0; background:var(--navy); color:#fff; padding:1.25rem 1rem; position:sticky; top:56px; height:calc(100vh - 56px); overflow-y:auto;}
+  nav.sidebar h1{font-size:1.05rem; line-height:1.3; margin:0 0 1rem 0; color:#fff;}
+  nav.sidebar a{display:block; color:#cfe3ee; text-decoration:none; font-size:0.88rem; padding:0.4rem 0.5rem; border-radius:6px; margin-bottom:0.15rem;}
+  nav.sidebar a:hover{background:rgba(255,255,255,0.12); color:#fff;}
+  main{flex:1; max-width:960px; margin:0 auto; padding:2rem 2.5rem 5rem 2.5rem;}
+  .cover{background:linear-gradient(135deg,var(--navy),var(--teal-dark)); color:#fff; border-radius:14px; padding:2.5rem 2.5rem; margin-bottom:2rem;}
+  .cover h1{margin:0 0 0.4rem 0; font-size:1.9rem;}
+  .name-box{margin-top:1.4rem; background:rgba(255,255,255,0.1); border:1px dashed rgba(255,255,255,0.5); border-radius:8px; padding:0.9rem 1.1rem;}
+  .name-box label{display:block; font-size:0.8rem; color:#dceaf0; margin-bottom:0.2rem;}
+  .name-box .fill{display:block; width:100%; border:none; border-bottom:1px solid #dceaf0; height:1.6rem; background:transparent; color:#fff; font-size:1rem; font-family:inherit; padding:0; outline:none;}
+  .name-box .fill::placeholder{color:rgba(255,255,255,0.5);}
+  .goals{background:rgba(255,255,255,0.12); border-left:4px solid #fff; border-radius:6px; padding:0.9rem 1.1rem; font-size:0.92rem; color:#fff;}
+  .goals ul{margin:0.4rem 0 0 0; padding-left:1.2rem;}
+
+  section.topic{background:#fff; border:1px solid var(--border); border-radius:12px; padding:1.8rem 2rem; margin-bottom:1.6rem;}
+  section.topic h2{color:var(--navy); font-size:1.4rem; margin-top:0; border-bottom:3px solid var(--amber); padding-bottom:0.4rem;}
+  section.topic h3{color:var(--teal-dark); font-size:1.08rem; margin-top:1.6rem;}
+
+  .keybox{background:var(--soft-blue); border:1px solid #c7ddef; border-radius:8px; padding:0.9rem 1.1rem; margin:0.9rem 0; font-size:0.98rem;}
+  .keybox strong{color:var(--navy);}
+  .keyword{background:var(--soft-amber); border-left:4px solid var(--amber); border-radius:6px; padding:0.7rem 1rem; margin:0.9rem 0; font-size:0.92rem;}
+  .keyword b{color:var(--amber);}
+  .note-italic{font-style:italic; color:#5b6b78; font-size:0.9rem;}
+
+  dl.glossary dt{font-weight:700; color:var(--navy); margin-top:0.7rem;}
+  dl.glossary dd{margin-left:0; margin-bottom:0.2rem;}
+
+  .question{background:var(--soft-grey); border:1px solid var(--border); border-radius:8px; padding:1rem 1.2rem; margin:1.1rem 0;}
+  .question .qnum{display:inline-block; background:var(--navy); color:#fff; font-weight:700; font-size:0.82rem; width:1.9rem; height:1.9rem; line-height:1.9rem; text-align:center; border-radius:50%; margin-right:0.5rem;}
+  .answer-lines{
+    display:block; width:100%; box-sizing:border-box;
+    background-color:transparent;
+    min-height:5.1em; margin:0.6rem 0 0.2rem 0;
+    border:1px solid var(--line); border-radius:6px;
+    outline:none; resize:none; overflow:hidden;
+    font:inherit; color:inherit; line-height:1.7em;
+    padding:0.5em 0.7em;
+  }
+  .answer-lines:focus{border:1px solid var(--teal); background-color:#fbfdff; box-shadow:0 0 0 3px rgba(14,124,134,0.12);}
+  .answer-lines.short{min-height:2.6em;}
+  .answer-lines::placeholder{color:#9aa8b4; font-style:italic;}
+
+  .hint-btn{background:#fff; color:var(--amber); border:1px solid var(--amber); border-radius:6px; padding:0.32rem 0.75rem; font-size:0.78rem; cursor:pointer; margin-top:0.5rem; margin-right:0.5rem;}
+  .hint-btn:hover{background:var(--soft-amber);}
+  .hint-panel{display:none; background:var(--soft-amber); border-left:4px solid var(--amber); border-radius:6px; padding:0.6rem 0.9rem; margin-top:0.5rem; font-size:0.88rem;}
+  .hint-panel.shown{display:block;}
+
+  /* ---------- self-marking numeric question (no answer reveal — hints only) ---------- */
+  .sm-row{display:flex; align-items:center; gap:0.6rem; margin:0.7rem 0 0.3rem 0; flex-wrap:wrap;}
+  .sm-input{flex:1 1 160px; max-width:220px; min-width:120px; border:1px solid var(--line) !important; border-radius:6px; background-color:#fff !important; padding:0.5rem 0.7rem;}
+  .sm-input:focus{border:1px solid var(--teal) !important; background-color:#fbfdff !important; box-shadow:0 0 0 3px rgba(14,124,134,0.12);}
+  .sm-unit{font-size:0.92rem; color:#5b6b78; flex-shrink:0;}
+  .check-btn{background:var(--navy); color:#fff; border:none; border-radius:6px; padding:0.45rem 1rem; font-size:0.82rem; cursor:pointer; flex-shrink:0;}
+  .check-btn:hover{background:#0f2b47;}
+  .sm-feedback{font-size:0.9rem; font-weight:600; min-height:1.3em; margin:0.2rem 0;}
+  .sm-feedback.correct{color:var(--good);}
+  .sm-feedback.incorrect{color:var(--bad);}
+  .topbar .progress-status{font-size:0.72rem; color:#5b6b78; white-space:nowrap; flex-shrink:0;}
+  @media (max-width: 1000px){ .topbar .progress-status{display:none;} }
+
+  /* ---------- drag-and-drop labeling ---------- */
+  .dnd-wrap{display:flex; gap:1.6rem; flex-wrap:wrap; align-items:flex-start; margin:1rem 0;}
+  .dnd-graph{flex:1 1 340px; min-width:280px;}
+  .dnd-graph svg{max-width:100%; height:auto;}
+  .dnd-panel{flex:1 1 280px; min-width:260px;}
+  .dnd-bank{display:flex; flex-wrap:wrap; gap:0.5rem; background:var(--soft-grey); border:1px dashed var(--line); border-radius:8px; padding:0.8rem; min-height:3.2rem;}
+  .dnd-chip{background:#fff; border:1px solid var(--teal); color:var(--teal-dark); border-radius:20px; padding:0.4rem 0.9rem; font-size:0.85rem; cursor:grab; user-select:none; white-space:nowrap;}
+  .dnd-chip:active{cursor:grabbing;}
+  .dnd-chip.selected{background:var(--teal); color:#fff;}
+  .dnd-zones{margin-top:1rem; display:flex; flex-direction:column; gap:0.5rem;}
+  .dnd-zone-row{display:flex; align-items:center; gap:0.6rem;}
+  .dnd-zone-letter{display:inline-block; background:#fff; border:2px solid var(--amber); color:var(--amber); font-weight:700; font-size:0.8rem; width:1.8rem; height:1.8rem; line-height:1.7rem; text-align:center; border-radius:50%; flex-shrink:0;}
+  .dnd-zone{flex:1; min-height:2.4rem; border:2px dashed var(--line); border-radius:8px; padding:0.4rem 0.7rem; font-size:0.88rem; display:flex; align-items:center; background:#fff;}
+  .dnd-zone.filled{border-style:solid; cursor:pointer;}
+  .dnd-zone.correct{border-color:var(--good); background:var(--soft-green);}
+  .dnd-zone.incorrect{border-color:var(--bad); background:var(--soft-bad);}
+  .dnd-zone.dragover{border-color:var(--teal); background:var(--soft-blue);}
+  .dnd-zone .placed-chip{background:transparent; border:none; color:inherit; font-weight:600; padding:0; cursor:pointer;}
+  .dnd-mark{font-weight:700; margin-left:0.4rem;}
+  .dnd-mark.correct{color:var(--good);}
+  .dnd-mark.incorrect{color:var(--bad);}
+  .dnd-reset-btn{background:#fff; color:var(--navy); border:1px solid var(--border); border-radius:6px; padding:0.4rem 0.9rem; font-size:0.8rem; cursor:pointer; margin-top:0.8rem;}
+  .dnd-reset-btn:hover{background:var(--soft-blue);}
+
+  /* ---------- matching (checkbox) activity ---------- */
+  .match-row{display:flex; gap:1.4rem; flex-wrap:wrap; align-items:flex-start; background:var(--soft-grey); border:1px solid var(--border); border-radius:8px; padding:1rem 1.2rem; margin:1rem 0;}
+  .match-graph{flex:0 0 auto;}
+  .match-graph .letter-tag{font-weight:700; color:var(--navy); margin-bottom:0.3rem;}
+  .match-body{flex:1 1 320px; min-width:260px;}
+  .match-options{display:grid; grid-template-columns:repeat(2, 1fr); gap:0.35rem 1rem; margin:0.5rem 0 0.7rem 0;}
+  .match-options label{display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; cursor:pointer;}
+  .match-options input{margin:0;}
+
+  /* ---------- sticky top action bar ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; height:56px; z-index:200;
+    background:#fff; border-bottom:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    display:flex; align-items:center; gap:0.6rem; padding:0 1rem;
+  }
+  .topbar-actions{display:flex; align-items:center; gap:0.6rem; overflow-x:auto; flex:1 1 auto; min-width:0; height:100%; padding-right:0.4rem;}
+  .topbar .topbar-title{font-weight:700; color:var(--navy); font-size:0.92rem; white-space:nowrap; flex-shrink:0; margin-right:0.4rem;}
+  .topbar button{background:#fff; color:var(--navy); border:1px solid var(--border); border-radius:50px; padding:0.5rem 1rem; font-size:0.82rem; cursor:pointer; white-space:nowrap; flex-shrink:0;}
+  .topbar button:hover{background:var(--soft-blue);}
+  .topbar button.primary{background:var(--amber); color:#fff; border-color:var(--amber); font-weight:600; flex-shrink:0;}
+  .topbar button.primary:hover{background:#c0721c;}
+  .topbar .save-status{font-size:0.72rem; color:#5b6b78; white-space:nowrap; flex-shrink:0;}
+  @media (max-width: 900px){ .topbar .save-status{display:none;} }
+  @media (max-width: 620px){ .topbar .topbar-title{display:none;} }
+  footer.page{font-size:0.8rem; color:#7c8b98; text-align:center; margin-top:2rem;}
+
+  @media print{
+    nav.sidebar, .topbar, .check-btn, .hint-btn, .dnd-reset-btn{display:none !important;}
+    .layout{display:block;}
+    main{max-width:100%; padding:0; margin:0;}
+    body{background:#fff; font-size:11pt; padding-top:0;}
+    section.topic{border:none; box-shadow:none; padding:0; margin:0 0 1.2rem 0; page-break-inside:avoid;}
+    .cover{page-break-after:always; border-radius:0;}
+    a{color:inherit; text-decoration:none;}
+    .answer-lines{border-color:#5b6b78 !important; box-shadow:none !important; color:#000;}
+    .answer-lines::placeholder{color:transparent;}
+    .name-box .fill{color:#000; border-bottom-color:#5b6b78;}
+    .name-box .fill::placeholder{color:transparent;}
+    .sm-feedback, .hint-panel{display:none !important;}
+    .sm-input{border:none !important; border-bottom:1px solid #5b6b78 !important; border-radius:0 !important; background:transparent !important; box-shadow:none !important; color:#000;}
+    .sm-input::placeholder{color:transparent;}
+    .dnd-zone{border:none !important; border-bottom:1px solid #5b6b78 !important; border-radius:0 !important; background:transparent !important;}
+    .dnd-mark{display:none !important;}
+    .dnd-bank{border:1px solid #5b6b78;}
+    .match-options input{transform:scale(1.1);}
+  }
+</style>
+</head>
+<body>
+<div class="topbar no-print">
+  <div class="topbar-actions">
+    <span class="topbar-title">Motion Graphs</span>
+    <button onclick="clearMyAnswers()">Clear my answers</button>
+    <button onclick="saveAnswersToFile()">&#128190; Save answers</button>
+    <button onclick="triggerLoadAnswers()">&#128194; Load answers</button>
+    <input type="file" id="loadFileInput" accept="application/json" style="display:none" onchange="handleLoadFile(event)">
+    <button id="btnLinkFile" style="display:none;" onclick="linkSaveFile()">&#128279; Link a save file</button>
+    <span class="progress-status" id="progressStatus">Checked 0/0 &middot; 0 correct</span>
+    <span class="save-status" id="saveStatus">Checking autosave&hellip;</span>
+  </div>
+  <button class="primary" onclick="window.print()">&#128424;&#65039; Print / Save as PDF</button>
+</div>
+<div class="layout">
+  <nav class="sidebar no-print">
+    <h1>Motion Graphs</h1>
+    <a href="#cover">Cover &amp; goals</a>
+    <a href="#s1">1. Label the Graph</a>
+    <a href="#s2">2. Match the Graphs</a>
+    <a href="#s3">3. The Motorbike&rsquo;s Journey</a>
+    <a href="#sG">Glossary</a>
+  </nav>
+
+  <main>
+    <section class="cover" id="cover">
+      <h1>Motion Graphs &mdash; A Motorbike&rsquo;s Journey</h1>
+      <div class="goals" style="margin-top:1.3rem;">
+        <strong style="color:#fff;">By the end of this workbook you should be able to:</strong>
+        <ul>
+          <li>Identify sections of a distance&ndash;time graph where an object is at rest or moving at a constant speed.</li>
+          <li>Match the shape of a distance&ndash;time or speed&ndash;time graph to a description of the motion it shows.</li>
+          <li>Calculate speed and velocity from the gradient of a distance&ndash;time graph.</li>
+        </ul>
+      </div>
+      <div class="name-box">
+        <label>Name</label><input type="text" class="fill" id="studentName" autocomplete="name">
+      </div>
+    </section>
+
+    <section class="topic" id="s1">
+      <h2>1. Label the Graph</h2>
+      <p>Before working with a real journey, make sure you can read what a distance&ndash;time graph is telling you at a glance. The graph below shows a motorbike&rsquo;s journey &mdash; the same one you&rsquo;ll use for the calculations in Section 3.</p>
+      <div class="keybox"><strong>Key idea.</strong> On a distance&ndash;time graph: a <strong>flat</strong> line means the object is at rest (not moving); a <strong>straight sloped</strong> line means it&rsquo;s moving at a constant speed &mdash; the steeper the line, the faster it&rsquo;s going.</div>
+
+      <div class="dnd-wrap">
+        <div class="dnd-graph"><svg viewBox="0 0 620 460" width="620" height="460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Distance-time graph of a motorbike journey with lettered regions to label"><line x1="62.0" y1="15.0" x2="62.0" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="62.0" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">0</text><line x1="121.8" y1="15.0" x2="121.8" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="121.8" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">10</text><line x1="181.6" y1="15.0" x2="181.6" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="181.6" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">20</text><line x1="241.3" y1="15.0" x2="241.3" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="241.3" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">30</text><line x1="301.1" y1="15.0" x2="301.1" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="301.1" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">40</text><line x1="360.9" y1="15.0" x2="360.9" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="360.9" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">50</text><line x1="420.7" y1="15.0" x2="420.7" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="420.7" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">60</text><line x1="480.4" y1="15.0" x2="480.4" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="480.4" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">70</text><line x1="540.2" y1="15.0" x2="540.2" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="540.2" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">80</text><line x1="600.0" y1="15.0" x2="600.0" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="600.0" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">90</text><line x1="62.0" y1="414.0" x2="600.0" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="418.0" font-size="12" fill="#5b6b78" text-anchor="end">0</text><line x1="62.0" y1="364.1" x2="600.0" y2="364.1" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="368.1" font-size="12" fill="#5b6b78" text-anchor="end">200</text><line x1="62.0" y1="314.2" x2="600.0" y2="314.2" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="318.2" font-size="12" fill="#5b6b78" text-anchor="end">400</text><line x1="62.0" y1="264.4" x2="600.0" y2="264.4" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="268.4" font-size="12" fill="#5b6b78" text-anchor="end">600</text><line x1="62.0" y1="214.5" x2="600.0" y2="214.5" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="218.5" font-size="12" fill="#5b6b78" text-anchor="end">800</text><line x1="62.0" y1="164.6" x2="600.0" y2="164.6" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="168.6" font-size="12" fill="#5b6b78" text-anchor="end">1000</text><line x1="62.0" y1="114.8" x2="600.0" y2="114.8" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="118.8" font-size="12" fill="#5b6b78" text-anchor="end">1200</text><line x1="62.0" y1="64.9" x2="600.0" y2="64.9" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="68.9" font-size="12" fill="#5b6b78" text-anchor="end">1400</text><line x1="62.0" y1="15.0" x2="600.0" y2="15.0" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="19.0" font-size="12" fill="#5b6b78" text-anchor="end">1600</text><line x1="62.0" y1="414.0" x2="608.0" y2="414.0" stroke="#173a5e" stroke-width="2"/><line x1="62.0" y1="414.0" x2="62.0" y2="7.0" stroke="#173a5e" stroke-width="2"/><polygon points="608,414 600,410 600,418" fill="#173a5e"/><polygon points="62,7 58,15 66,15" fill="#173a5e"/><polyline points="62.0,414.0 121.8,339.2 181.6,339.2 301.1,276.8 420.7,276.8 540.2,139.7" fill="none" stroke="#0e7c86" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="78.0" cy="32.0" r="11" fill="#fff" stroke="#d98324" stroke-width="2"/><text x="78.0" y="33.0" font-size="13" font-weight="700" fill="#d98324" text-anchor="middle" dominant-baseline="central">a</text><circle cx="596.0" cy="447.0" r="11" fill="#fff" stroke="#d98324" stroke-width="2"/><text x="596.0" y="448.0" font-size="13" font-weight="700" fill="#d98324" text-anchor="middle" dominant-baseline="central">b</text><circle cx="83.9" cy="366.6" r="11" fill="#fff" stroke="#d98324" stroke-width="2"/><text x="83.9" y="367.6" font-size="13" font-weight="700" fill="#d98324" text-anchor="middle" dominant-baseline="central">c</text><circle cx="151.7" cy="325.2" r="11" fill="#fff" stroke="#d98324" stroke-width="2"/><text x="151.7" y="326.2" font-size="13" font-weight="700" fill="#d98324" text-anchor="middle" dominant-baseline="central">d</text><circle cx="233.3" cy="298.0" r="11" fill="#fff" stroke="#d98324" stroke-width="2"/><text x="233.3" y="299.0" font-size="13" font-weight="700" fill="#d98324" text-anchor="middle" dominant-baseline="central">e</text><circle cx="360.9" cy="262.8" r="11" fill="#fff" stroke="#d98324" stroke-width="2"/><text x="360.9" y="263.8" font-size="13" font-weight="700" fill="#d98324" text-anchor="middle" dominant-baseline="central">f</text><circle cx="490.4" cy="198.3" r="11" fill="#fff" stroke="#d98324" stroke-width="2"/><text x="490.4" y="199.3" font-size="13" font-weight="700" fill="#d98324" text-anchor="middle" dominant-baseline="central">g</text></svg></div>
+        <div class="dnd-panel">
+          <p style="margin-top:0;"><strong>Word bank</strong> &mdash; drag each label onto the matching letter (or tap a label, then tap the box):</p>
+          <div class="dnd-bank" id="dndBank"><span class="dnd-chip" id="dndChip-0" draggable="true" tabindex="0" data-category="distance-m">distance / m</span><span class="dnd-chip" id="dndChip-1" draggable="true" tabindex="0" data-category="time-s">time / s</span><span class="dnd-chip" id="dndChip-2" draggable="true" tabindex="0" data-category="constant-speed">constant speed</span><span class="dnd-chip" id="dndChip-3" draggable="true" tabindex="0" data-category="constant-speed">constant speed</span><span class="dnd-chip" id="dndChip-4" draggable="true" tabindex="0" data-category="constant-speed">constant speed</span><span class="dnd-chip" id="dndChip-5" draggable="true" tabindex="0" data-category="at-rest">at rest (stationary)</span><span class="dnd-chip" id="dndChip-6" draggable="true" tabindex="0" data-category="at-rest">at rest (stationary)</span></div>
+          <div class="dnd-zones"><div class="dnd-zone-row"><span class="dnd-zone-letter">a</span><div class="dnd-zone" id="dndZone-a" data-answer="distance-m" role="button" tabindex="0" aria-label="Drop zone a"></div></div><div class="dnd-zone-row"><span class="dnd-zone-letter">b</span><div class="dnd-zone" id="dndZone-b" data-answer="time-s" role="button" tabindex="0" aria-label="Drop zone b"></div></div><div class="dnd-zone-row"><span class="dnd-zone-letter">c</span><div class="dnd-zone" id="dndZone-c" data-answer="constant-speed" role="button" tabindex="0" aria-label="Drop zone c"></div></div><div class="dnd-zone-row"><span class="dnd-zone-letter">d</span><div class="dnd-zone" id="dndZone-d" data-answer="at-rest" role="button" tabindex="0" aria-label="Drop zone d"></div></div><div class="dnd-zone-row"><span class="dnd-zone-letter">e</span><div class="dnd-zone" id="dndZone-e" data-answer="constant-speed" role="button" tabindex="0" aria-label="Drop zone e"></div></div><div class="dnd-zone-row"><span class="dnd-zone-letter">f</span><div class="dnd-zone" id="dndZone-f" data-answer="at-rest" role="button" tabindex="0" aria-label="Drop zone f"></div></div><div class="dnd-zone-row"><span class="dnd-zone-letter">g</span><div class="dnd-zone" id="dndZone-g" data-answer="constant-speed" role="button" tabindex="0" aria-label="Drop zone g"></div></div></div>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <button class="dnd-reset-btn no-print" onclick="resetDndBankOrder(); document.querySelectorAll('.dnd-zone').forEach(clearZone); updateProgress(); scheduleFileWrite();">Reset labels</button>
+          <div class="hint-panel">A flat section means the distance isn&rsquo;t changing &mdash; the motorbike is <strong>at rest</strong>. A straight sloped line means the motorbike is covering equal distances in equal times &mdash; a <strong>constant speed</strong>. The steeper the line, the faster that constant speed is. The two axis boxes just need the quantity and its unit, matching what&rsquo;s already on the axis of the graph you met in the introduction.</div>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="topic" id="s2">
+      <h2>2. Match the Graphs</h2>
+      <p>Each of the small graphs below shows either distance or speed plotted against time &mdash; check the y-axis label carefully, as the same shape means something different on each type of graph. Tick every phrase from the bank that correctly describes each graph; some graphs need more than one tick.</p>
+      <div class="keyword"><b>Phrase bank:</b> Constant speed, Stationary, Accelerating, Decreasing speed, Not moving, Increasing speed, Getting further away.</div>
+
+      <div class="match-row" id="matchRow-a" data-correct2="Stationary|Not moving">
+        <div class="match-graph"><div class="letter-tag">a)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="distance graph a"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">distance</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 57.5 L 122.4 57.5" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph a) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matcha-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matcha-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matcha-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matcha-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matcha-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matcha-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matcha-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">The line is flat and the graph is <em>distance</em> against time &mdash; if distance isn&rsquo;t changing, is the motorbike moving at all?</div>
+        </div>
+      </div>
+
+      <div class="match-row" id="matchRow-b" data-correct2="Accelerating|Increasing speed|Getting further away">
+        <div class="match-graph"><div class="letter-tag">b)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="speed graph b"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">speed</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 96.0 L 122.4 36.5" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph b) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matchb-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matchb-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matchb-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matchb-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matchb-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matchb-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matchb-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">This is a <em>speed</em>&ndash;time graph. A straight line rising from zero means the speed is climbing at a steady rate &mdash; what&rsquo;s that called?</div>
+        </div>
+      </div>
+
+      <div class="match-row" id="matchRow-c" data-correct2="Accelerating|Decreasing speed|Getting further away">
+        <div class="match-graph"><div class="letter-tag">c)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="speed graph c"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">speed</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 40.0 L 122.4 71.5" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph c) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matchc-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matchc-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matchc-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matchc-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matchc-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matchc-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matchc-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">This is a <em>speed</em>&ndash;time graph, and the line is falling. What do we call speed decreasing over time?</div>
+        </div>
+      </div>
+
+      <div class="match-row" id="matchRow-d" data-correct2="Constant speed|Getting further away">
+        <div class="match-graph"><div class="letter-tag">d)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="distance graph d"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">distance</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 76.4 L 122.4 36.5" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph d) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matchd-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matchd-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matchd-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matchd-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matchd-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matchd-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matchd-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">This is a <em>distance</em>&ndash;time graph. A straight (not curved) line means the speed itself isn&rsquo;t changing &mdash; and distance is still going up.</div>
+        </div>
+      </div>
+
+      <div class="match-row" id="matchRow-e" data-correct2="Accelerating|Decreasing speed|Getting further away">
+        <div class="match-graph"><div class="letter-tag">e)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="distance graph e"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">distance</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 96.0 Q 56.9 36.5 122.4 34.4" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph e) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matche-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matche-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matche-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matche-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matche-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matche-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matche-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">This is a <em>distance</em>&ndash;time graph that curves and flattens off. Is the motorbike still moving further away? Is it slowing down or speeding up as it does?</div>
+        </div>
+      </div>
+
+      <div class="match-row" id="matchRow-f" data-correct2="Accelerating|Increasing speed|Getting further away">
+        <div class="match-graph"><div class="letter-tag">f)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="speed graph f"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">speed</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 76.4 L 122.4 36.5" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph f) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matchf-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matchf-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matchf-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matchf-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matchf-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matchf-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matchf-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">This is a <em>speed</em>&ndash;time graph, a straight line rising (even though it doesn&rsquo;t start at zero). Is the speed increasing at a steady rate?</div>
+        </div>
+      </div>
+
+      <div class="match-row" id="matchRow-g" data-correct2="Accelerating|Increasing speed|Getting further away">
+        <div class="match-graph"><div class="letter-tag">g)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="distance graph g"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">distance</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 96.0 Q 101.6 94.6 122.4 36.5" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph g) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matchg-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matchg-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matchg-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matchg-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matchg-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matchg-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matchg-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">This is a <em>distance</em>&ndash;time graph that curves and gets steeper. Is the motorbike still moving further away? Is it slowing down or speeding up as it does?</div>
+        </div>
+      </div>
+
+      <div class="match-row" id="matchRow-h" data-correct2="Constant speed|Getting further away">
+        <div class="match-graph"><div class="letter-tag">h)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="distance graph h"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">distance</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 96.0 L 122.4 36.5" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph h) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matchh-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matchh-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matchh-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matchh-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matchh-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matchh-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matchh-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">This is a <em>distance</em>&ndash;time graph: a straight line through the origin. What does a straight line on a distance&ndash;time graph always mean?</div>
+        </div>
+      </div>
+
+      <div class="match-row" id="matchRow-i" data-correct2="Constant speed|Getting further away">
+        <div class="match-graph"><div class="letter-tag">i)</div><svg viewBox="0 0 150 118" width="150" height="118" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="speed graph i"><line x1="34" y1="96" x2="144" y2="96" stroke="#173a5e" stroke-width="1.6"/><line x1="34" y1="96" x2="34" y2="20" stroke="#173a5e" stroke-width="1.6"/><polygon points="144,96 138,93 138,99" fill="#173a5e"/><polygon points="34,20 31,26 37,26" fill="#173a5e"/><text x="2" y="14" font-size="11" fill="#173a5e" font-weight="700">speed</text><text x="144" y="112" font-size="11" fill="#173a5e" font-weight="700" text-anchor="end">time</text><path d="M 34.0 54.0 L 122.4 54.0" fill="none" stroke="#0a5b62" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <div class="match-body">
+          <p style="margin:0 0 0.3rem 0; font-size:0.9rem; color:#5b6b78;">Tick every phrase that correctly describes graph i) &mdash; more than one may apply.</p>
+          <div class="match-options"><label><input type="checkbox" id="matchi-opt-Constantspeed" value="Constant speed">Constant speed</label><label><input type="checkbox" id="matchi-opt-Stationary" value="Stationary">Stationary</label><label><input type="checkbox" id="matchi-opt-Accelerating" value="Accelerating">Accelerating</label><label><input type="checkbox" id="matchi-opt-Decreasingspeed" value="Decreasing speed">Decreasing speed</label><label><input type="checkbox" id="matchi-opt-Notmoving" value="Not moving">Not moving</label><label><input type="checkbox" id="matchi-opt-Increasingspeed" value="Increasing speed">Increasing speed</label><label><input type="checkbox" id="matchi-opt-Gettingfurtheraway" value="Getting further away">Getting further away</label></div>
+          <button class="check-btn no-print" onclick="checkMatch(this)">Check</button>
+          <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+          <div class="sm-feedback" aria-live="polite"></div>
+          <div class="hint-panel">This is a <em>speed</em>&ndash;time graph: a flat line above zero. The speed isn&rsquo;t changing &mdash; but is it zero?</div>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="topic" id="s3">
+      <h2>3. The Motorbike&rsquo;s Journey</h2>
+      <p>Now put both skills together on a full journey. Work through the questions below using the graph &mdash; each one builds on the one before it.</p>
+
+      <div class="keybox"><strong>The graph.</strong> Look at the distance&ndash;time graph of a motorbike and then answer the questions below. (The sudden changes of speed on this graph are not realistic &mdash; a real vehicle speeds up and slows down gradually.)</div>
+      <figure style="margin:1.2rem auto; text-align:center; max-width:640px;"><svg viewBox="0 0 620 460" width="620" height="460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Distance-time graph of a motorbike journey"><line x1="62.0" y1="15.0" x2="62.0" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="62.0" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">0</text><line x1="121.8" y1="15.0" x2="121.8" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="121.8" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">10</text><line x1="181.6" y1="15.0" x2="181.6" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="181.6" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">20</text><line x1="241.3" y1="15.0" x2="241.3" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="241.3" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">30</text><line x1="301.1" y1="15.0" x2="301.1" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="301.1" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">40</text><line x1="360.9" y1="15.0" x2="360.9" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="360.9" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">50</text><line x1="420.7" y1="15.0" x2="420.7" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="420.7" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">60</text><line x1="480.4" y1="15.0" x2="480.4" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="480.4" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">70</text><line x1="540.2" y1="15.0" x2="540.2" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="540.2" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">80</text><line x1="600.0" y1="15.0" x2="600.0" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="600.0" y="432.0" font-size="12" fill="#5b6b78" text-anchor="middle">90</text><line x1="62.0" y1="414.0" x2="600.0" y2="414.0" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="418.0" font-size="12" fill="#5b6b78" text-anchor="end">0</text><line x1="62.0" y1="364.1" x2="600.0" y2="364.1" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="368.1" font-size="12" fill="#5b6b78" text-anchor="end">200</text><line x1="62.0" y1="314.2" x2="600.0" y2="314.2" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="318.2" font-size="12" fill="#5b6b78" text-anchor="end">400</text><line x1="62.0" y1="264.4" x2="600.0" y2="264.4" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="268.4" font-size="12" fill="#5b6b78" text-anchor="end">600</text><line x1="62.0" y1="214.5" x2="600.0" y2="214.5" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="218.5" font-size="12" fill="#5b6b78" text-anchor="end">800</text><line x1="62.0" y1="164.6" x2="600.0" y2="164.6" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="168.6" font-size="12" fill="#5b6b78" text-anchor="end">1000</text><line x1="62.0" y1="114.8" x2="600.0" y2="114.8" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="118.8" font-size="12" fill="#5b6b78" text-anchor="end">1200</text><line x1="62.0" y1="64.9" x2="600.0" y2="64.9" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="68.9" font-size="12" fill="#5b6b78" text-anchor="end">1400</text><line x1="62.0" y1="15.0" x2="600.0" y2="15.0" stroke="#d7e0e8" stroke-width="1"/><text x="54.0" y="19.0" font-size="12" fill="#5b6b78" text-anchor="end">1600</text><line x1="62.0" y1="414.0" x2="608.0" y2="414.0" stroke="#173a5e" stroke-width="2"/><line x1="62.0" y1="414.0" x2="62.0" y2="7.0" stroke="#173a5e" stroke-width="2"/><polygon points="608,414 600,410 600,418" fill="#173a5e"/><polygon points="62,7 58,15 66,15" fill="#173a5e"/><polyline points="62.0,414.0 121.8,339.2 181.6,339.2 301.1,276.8 420.7,276.8 540.2,139.7" fill="none" stroke="#0e7c86" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><text x="62" y="18" font-size="13" fill="#173a5e" font-weight="700">Distance in metres</text><text x="608" y="454" font-size="13" fill="#173a5e" font-weight="700" text-anchor="end">Time in seconds</text></svg><figcaption style="font-size:0.85rem; color:#5b6b78; margin-top:0.4rem;">Fig. 3.1 Distance&ndash;time graph of a motorbike&rsquo;s journey.</figcaption></figure>
+
+      <div class="question sm-question" data-qtype="number" data-answer="30" id="lq1">
+        <span class="qnum">16</span><strong>This question is about regions in the graph that show the motorbike at rest. For how long is the motorbike at rest during the whole journey?</strong>
+        <div class="sm-row">
+          <input type="text" class="sm-input" inputmode="decimal" placeholder="Type your answer&hellip;" aria-label="Answer">
+          <span class="sm-unit">s</span>
+          <button class="check-btn no-print" onclick="checkAnswer(this)">Check</button>
+        </div>
+        <div class="sm-feedback" aria-live="polite"></div>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">The motorbike is at rest wherever the line is flat &mdash; distance isn&rsquo;t increasing. Find every flat section and add up how long each one lasts.</div>
+      </div>
+
+      <div class="question sm-question" data-qtype="number" data-min="350" data-max="370" id="lq2">
+        <span class="qnum">17</span><strong>This question is about the distance travelled by the motorbike. What distance has the motorbike travelled in the first 25 seconds?</strong>
+        <div class="sm-row">
+          <input type="text" class="sm-input" inputmode="decimal" placeholder="Type your answer&hellip;" aria-label="Answer">
+          <span class="sm-unit">m</span>
+          <button class="check-btn no-print" onclick="checkAnswer(this)">Check</button>
+        </div>
+        <div class="sm-feedback" aria-live="polite"></div>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">25 seconds falls in the middle of a sloped section, between two grid lines &mdash; you&rsquo;ll need to read the graph carefully rather than reading off a labelled point. A sensible estimate within about 10 m either way is fine.</div>
+      </div>
+
+      <div class="question sm-question" data-qtype="number" data-answer="550" id="lq3">
+        <span class="qnum">18</span><strong>What distance does the motorbike travel between 60 and 80 seconds into its journey?</strong>
+        <div class="sm-row">
+          <input type="text" class="sm-input" inputmode="decimal" placeholder="Type your answer&hellip;" aria-label="Answer">
+          <span class="sm-unit">m</span>
+          <button class="check-btn no-print" onclick="checkAnswer(this)">Check</button>
+        </div>
+        <div class="sm-feedback" aria-live="polite"></div>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">Read the distance at t&nbsp;=&nbsp;60 s and the distance at t&nbsp;=&nbsp;80 s from the graph, then subtract.</div>
+      </div>
+
+      <div class="question">
+        <span class="qnum">19</span><strong>This question is about the speed of the motorbike. Work out the speed of the motorbike during the first 10 seconds.</strong>
+        <p style="margin:0.6rem 0 0.2rem 0; font-size:0.88rem; color:#5b6b78;">Show your working:</p>
+        <textarea class="answer-lines short" rows="3" placeholder="speed = gradient = change in distance &divide; change in time = &hellip;"></textarea>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">Speed is the <strong>gradient</strong> of a distance&ndash;time graph: (change in distance) &divide; (change in time), using the two endpoints of this section of the line.</div>
+        <div class="sm-question" data-qtype="number" data-answer="30" id="lq4" style="margin-top:0.8rem; background:transparent; border:none; padding:0;">
+          <div class="sm-row">
+            <span style="font-size:0.88rem; color:#5b6b78;">Final answer:</span>
+            <input type="text" class="sm-input" inputmode="decimal" placeholder="Type your answer&hellip;" aria-label="Final answer">
+            <span class="sm-unit">m/s</span>
+            <button class="check-btn no-print" onclick="checkAnswer(this)">Check</button>
+          </div>
+          <div class="sm-feedback" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="question sm-question" data-qtype="time-range" data-start-answer="20" data-end-answer="40" id="lq5">
+        <span class="qnum">20</span><strong>Between what times did the motorbike travel at the lowest speed (not including the time it was at rest)?</strong>
+        <div class="sm-row">
+          <span class="sm-unit">Between</span>
+          <input type="text" class="sm-input" style="max-width:110px;" inputmode="decimal" placeholder="start" aria-label="Start time" id="lq5-start">
+          <span class="sm-unit">s and</span>
+          <input type="text" class="sm-input" style="max-width:110px;" inputmode="decimal" placeholder="end" aria-label="End time" id="lq5-end">
+          <span class="sm-unit">s</span>
+          <button class="check-btn no-print" onclick="checkTimeRange(this)">Check</button>
+        </div>
+        <div class="sm-feedback" aria-live="polite"></div>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">Compare the gradient (steepness) of each sloped section &mdash; the lowest speed is the <em>least steep</em> one.</div>
+      </div>
+
+      <div class="question">
+        <span class="qnum">21</span><strong>Give a reason for your answer.</strong>
+        <textarea class="answer-lines short" rows="2" placeholder="Type your answer here&hellip;"></textarea>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">Think about what the gradient of a distance&ndash;time graph represents, and compare it across the sloped sections.</div>
+      </div>
+
+      <div class="question">
+        <span class="qnum">22</span><strong>Work out the speed of the motorbike during this time (the slowest section from Q20).</strong>
+        <p style="margin:0.6rem 0 0.2rem 0; font-size:0.88rem; color:#5b6b78;">Show your working:</p>
+        <textarea class="answer-lines short" rows="3" placeholder="speed = gradient = change in distance &divide; change in time = &hellip;"></textarea>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">Use the same gradient method as Q19, but with the start and end points of this slower section (t&nbsp;=&nbsp;20&nbsp;s to t&nbsp;=&nbsp;40&nbsp;s). Answers between 11 and 14 m/s are accepted.</div>
+        <div class="sm-question" data-qtype="number" data-min="11" data-max="14" id="lq6" style="margin-top:0.8rem; background:transparent; border:none; padding:0;">
+          <div class="sm-row">
+            <span style="font-size:0.88rem; color:#5b6b78;">Final answer:</span>
+            <input type="text" class="sm-input" inputmode="decimal" placeholder="Type your answer&hellip;" aria-label="Final answer">
+            <span class="sm-unit">m/s</span>
+            <button class="check-btn no-print" onclick="checkAnswer(this)">Check</button>
+          </div>
+          <div class="sm-feedback" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="question">
+        <span class="qnum">23</span><strong>Work out the velocity of the motorbike between 60 and 80 seconds into its journey.</strong>
+        <p style="margin:0.6rem 0 0.2rem 0; font-size:0.88rem; color:#5b6b78;">Show your working:</p>
+        <textarea class="answer-lines short" rows="3" placeholder="velocity = gradient = change in distance &divide; change in time = &hellip;"></textarea>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">You already found the distance covered in this interval in Q18 &mdash; divide it by the time taken (20&nbsp;s). Answers between 25 and 30 m/s are accepted.</div>
+        <div class="sm-question" data-qtype="number" data-min="25" data-max="30" id="lq7" style="margin-top:0.8rem; background:transparent; border:none; padding:0;">
+          <div class="sm-row">
+            <span style="font-size:0.88rem; color:#5b6b78;">Final answer:</span>
+            <input type="text" class="sm-input" inputmode="decimal" placeholder="Type your answer&hellip;" aria-label="Final answer">
+            <span class="sm-unit">m/s</span>
+            <button class="check-btn no-print" onclick="checkAnswer(this)">Check</button>
+          </div>
+          <div class="sm-feedback" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <div class="question sm-question" data-qtype="number" data-answer="1300" id="lq8">
+        <span class="qnum">24</span><strong>Between 80 and 90 seconds the biker travels at a constant speed of 20 m/s. Using this information, what total distance will the motorbike have travelled by t&nbsp;=&nbsp;90 s?</strong>
+        <div class="sm-row">
+          <input type="text" class="sm-input" inputmode="decimal" placeholder="Type your answer&hellip;" aria-label="Answer">
+          <span class="sm-unit">m</span>
+          <button class="check-btn no-print" onclick="checkAnswer(this)">Check</button>
+        </div>
+        <div class="sm-feedback" aria-live="polite"></div>
+        <button class="hint-btn no-print" onclick="toggleHint(this)">Hint</button>
+        <div class="hint-panel">Start from the distance already reached at t&nbsp;=&nbsp;80 s, then add the extra distance covered in the last 10 seconds at 20 m/s.</div>
+      </div>
+
+    </section>
+
+    <section class="topic" id="sG">
+      <h2>Glossary</h2>
+      <dl class="glossary">
+        <dt>Distance&ndash;time graph</dt><dd>A graph plotting how far an object has travelled against time. Its gradient (slope) gives the object&rsquo;s speed.</dd>
+        <dt>Speed&ndash;time graph</dt><dd>A graph plotting an object&rsquo;s speed against time. Its gradient gives the object&rsquo;s acceleration; the area under it gives distance travelled.</dd>
+        <dt>Gradient</dt><dd>The steepness of a line on a graph, calculated as (change in the vertical value) &divide; (change in the horizontal value).</dd>
+        <dt>Speed</dt><dd>How fast an object is moving &mdash; distance travelled per unit time, with no regard to direction.</dd>
+        <dt>Velocity</dt><dd>Speed in a stated direction. On these single-direction journeys, velocity and speed have the same size.</dd>
+        <dt>Acceleration</dt><dd>The rate at which an object&rsquo;s speed is changing.</dd>
+        <dt>Stationary</dt><dd>Not moving &mdash; distance (or displacement) stays constant over time.</dd>
+      </dl>
+    </section>
+
+    <footer class="page no-print">Motion Graphs Workbook &middot; Companion resources: <em>Distance&ndash;Time Gradient Calculations</em>, <em>Motion Graphs 2</em>.</footer>
+  </main>
+</div>
+
+<script>
+
+const STORAGE_PREFIX = 'ib-motion-graphs-motorbike-v1-';
+const WORKBOOK_ID    = 'motion-graphs-motorbike';
+const TRIALS_DB_NAME = STORAGE_PREFIX + 'linked-file';
+let fillableEls = [];
+
+function storageAvailable(){
+  try{
+    const k = '__test__' + STORAGE_PREFIX;
+    localStorage.setItem(k, '1');
+    localStorage.removeItem(k);
+    return true;
+  } catch(e){ return false; }
+}
+const canStore = storageAvailable();
+
+function autosize(el){
+  if(el.tagName !== 'TEXTAREA') return;
+  el.style.height = 'auto';
+  el.style.height = Math.max(el.scrollHeight, el.offsetHeight) + 'px';
+}
+
+function initFillables(){
+  fillableEls = Array.prototype.slice.call(document.querySelectorAll('.answer-lines, .name-box .fill, .sm-input'));
+  fillableEls.forEach(function(el, i){
+    const key = STORAGE_PREFIX + i;
+    el.dataset.storeKey = key;
+    if(canStore){
+      const saved = localStorage.getItem(key);
+      if(saved !== null){ el.value = saved; }
+    }
+    autosize(el);
+    el.addEventListener('input', function(){
+      autosize(el);
+      if(canStore){ try{ localStorage.setItem(el.dataset.storeKey, el.value); } catch(e){} }
+      scheduleFileWrite();
+    });
+  });
+}
+
+function getAnswersArray(){ return fillableEls.map(function(el){ return el.value; }); }
+function applyAnswersArray(arr){
+  fillableEls.forEach(function(el, i){
+    if(arr && arr[i] !== undefined){ el.value = arr[i]; autosize(el); }
+  });
+}
+
+function getExtraState(){
+  const state = { smChecked:{}, smCorrect:{}, dnd:{}, matchChecked:{}, matchCorrect:{} };
+  document.querySelectorAll('.sm-question').forEach(function(q){
+    state.smChecked[q.id] = q.dataset.attempted === '1';
+    state.smCorrect[q.id] = q.dataset.correct === '1';
+  });
+  document.querySelectorAll('.dnd-zone').forEach(function(z){
+    const chip = z.querySelector('.placed-chip');
+    state.dnd[z.id] = chip ? chip.dataset.category : null;
+  });
+  document.querySelectorAll('.match-row').forEach(function(row){
+    state.matchChecked[row.id] = row.dataset.attempted === '1';
+    state.matchCorrect[row.id] = row.dataset.correct === '1';
+  });
+  return state;
+}
+
+function applyExtraState(data){
+  document.querySelectorAll('.sm-question').forEach(function(q){
+    const attempted = data && data.smChecked && data.smChecked[q.id];
+    const correct = data && data.smCorrect && data.smCorrect[q.id];
+    q.dataset.attempted = attempted ? '1' : '0';
+    q.dataset.correct = correct ? '1' : '0';
+    setSmFeedback(q, attempted, correct);
+  });
+  document.querySelectorAll('.match-row').forEach(function(row){
+    const attempted = data && data.matchChecked && data.matchChecked[row.id];
+    const correct = data && data.matchCorrect && data.matchCorrect[row.id];
+    row.dataset.attempted = attempted ? '1' : '0';
+    row.dataset.correct = correct ? '1' : '0';
+    setMatchFeedback(row, attempted, correct);
+  });
+  if(data && data.dnd){
+    Object.keys(data.dnd).forEach(function(zoneId){
+      const category = data.dnd[zoneId];
+      const zone = document.getElementById(zoneId);
+      if(!zone || !category) return;
+      const chip = document.querySelector('.dnd-chip[data-category="' + category + '"]:not(.placed)');
+      if(chip) placeChipInZone(chip, zone, false);
+    });
+  }
+  updateProgress();
+}
+
+function setSmFeedback(q, attempted, correct){
+  const feedback = q.querySelector('.sm-feedback');
+  if(!feedback) return;
+  if(correct){ feedback.textContent = '\u2713 Correct!'; feedback.className = 'sm-feedback correct'; }
+  else if(attempted){ feedback.textContent = '\u2717 Not quite \u2014 try again, or use the hint.'; feedback.className = 'sm-feedback incorrect'; }
+  else { feedback.textContent = ''; feedback.className = 'sm-feedback'; }
+}
+function setMatchFeedback(row, attempted, correct){
+  const feedback = row.querySelector('.sm-feedback');
+  if(!feedback) return;
+  if(correct){ feedback.textContent = '\u2713 Correct!'; feedback.className = 'sm-feedback correct'; }
+  else if(attempted){ feedback.textContent = '\u2717 Not quite \u2014 try again, or use the hint.'; feedback.className = 'sm-feedback incorrect'; }
+  else { feedback.textContent = ''; feedback.className = 'sm-feedback'; }
+}
+
+function buildPayload(){
+  const payload = {
+    workbook: WORKBOOK_ID,
+    savedAt: new Date().toISOString(),
+    studentName: document.getElementById('studentName') ? document.getElementById('studentName').value : '',
+    answers: getAnswersArray()
+  };
+  if(typeof getExtraState === 'function') Object.assign(payload, getExtraState());
+  return payload;
+}
+
+function clearMyAnswers(){
+  if(!confirm('Clear everything you have typed and every label/answer you have placed or checked? This cannot be undone.')) return;
+  fillableEls.forEach(function(el){
+    el.value = '';
+    autosize(el);
+    if(canStore){ try{ localStorage.removeItem(el.dataset.storeKey); } catch(e){} }
+  });
+  document.querySelectorAll('.sm-question').forEach(function(q){
+    q.dataset.attempted = '0'; q.dataset.correct = '0';
+    setSmFeedback(q, false, false);
+  });
+  document.querySelectorAll('.match-row').forEach(function(row){
+    row.dataset.attempted = '0'; row.dataset.correct = '0';
+    setMatchFeedback(row, false, false);
+    row.querySelectorAll('input[type=checkbox]').forEach(function(cb){ cb.checked = false; });
+  });
+  document.querySelectorAll('.dnd-zone').forEach(function(zone){ clearZone(zone); });
+  resetDndBankOrder();
+  updateProgress();
+  scheduleFileWrite();
+}
+
+/* ---------- manual save-to-file / load-from-file ---------- */
+function downloadJSON(obj, filename){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+function saveAnswersToFile(){
+  const nameEl = document.getElementById('studentName');
+  const name = (nameEl ? nameEl.value : '').trim();
+  const safe = name ? name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : 'my';
+  downloadJSON(buildPayload(), WORKBOOK_ID + '-answers-' + safe + '.json');
+}
+function triggerLoadAnswers(){ document.getElementById('loadFileInput').click(); }
+function handleLoadFile(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(){
+    try{
+      const data = JSON.parse(reader.result);
+      applyAnswersArray(data.answers || []);
+      if(typeof applyExtraState === 'function') applyExtraState(data);
+      if(canStore){
+        fillableEls.forEach(function(el){ try{ localStorage.setItem(el.dataset.storeKey, el.value); } catch(e){} });
+      }
+      alert('Loaded your saved answers from "' + file.name + '".');
+    } catch(e){
+      alert('Sorry, that file could not be read as a saved-answers file.');
+    }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+/* ---------- linked save file (Chrome/Edge \u2014 File System Access API) ---------- */
+let fileHandle = null;
+let pendingHandle = null;
+const fsaSupported = ('showSaveFilePicker' in window);
+let fileWriteTimer = null;
+
+function idbOpen(){
+  return new Promise(function(resolve, reject){
+    const rq = indexedDB.open(TRIALS_DB_NAME, 1);
+    rq.onupgradeneeded = function(){ if(!rq.result.objectStoreNames.contains('handles')) rq.result.createObjectStore('handles'); };
+    rq.onsuccess = function(){ resolve(rq.result); };
+    rq.onerror = function(){ reject(rq.error); };
+  });
+}
+function idbGetHandle(){
+  return idbOpen().then(function(db){
+    return new Promise(function(resolve){
+      const tx = db.transaction('handles', 'readonly');
+      const rq = tx.objectStore('handles').get('fileHandle');
+      rq.onsuccess = function(){ resolve(rq.result || null); };
+      rq.onerror = function(){ resolve(null); };
+    });
+  }).catch(function(){ return null; });
+}
+function idbSetHandle(handle){
+  return idbOpen().then(function(db){
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').put(handle, 'fileHandle');
+  }).catch(function(){});
+}
+function updateLinkButton(){
+  const btn = document.getElementById('btnLinkFile');
+  if(!btn) return;
+  btn.textContent = fileHandle ? '\ud83d\udd17 Save file linked' : (pendingHandle ? '\ud83d\udd17 Reconnect save file' : '\ud83d\udd17 Link a save file');
+}
+function updateSaveStatus(){
+  const status = document.getElementById('saveStatus');
+  if(!status) return;
+  if(fileHandle){ status.textContent = 'Autosaving to your linked file'; }
+  else if(canStore){ status.textContent = 'Autosaving in this browser \u2014 click \ud83d\udcbe Save often as a backup'; }
+  else { status.textContent = 'Autosave unavailable here \u2014 use \ud83d\udcbe Save / \ud83d\udcc2 Load to keep your work'; }
+}
+function tryRestoreLinkedFile(){
+  if(!fsaSupported) return Promise.resolve();
+  return idbGetHandle().then(function(handle){
+    if(!handle) return;
+    return handle.queryPermission({mode:'readwrite'}).then(function(perm){
+      if(perm === 'granted'){ fileHandle = handle; } else { pendingHandle = handle; }
+    }).catch(function(){});
+  }).then(function(){ updateLinkButton(); updateSaveStatus(); });
+}
+function linkSaveFile(){
+  if(!fsaSupported) return;
+  const proceed = pendingHandle
+    ? pendingHandle.requestPermission({mode:'readwrite'}).then(function(req){
+        if(req === 'granted'){ fileHandle = pendingHandle; pendingHandle = null; }
+      })
+    : window.showSaveFilePicker({
+        suggestedName: WORKBOOK_ID + '-answers.json',
+        types: [{ description: 'Workbook answers', accept: {'application/json': ['.json']} }]
+      }).then(function(handle){ fileHandle = handle; return idbSetHandle(handle); });
+  proceed.then(function(){ updateLinkButton(); updateSaveStatus(); return writeToLinkedFile(); })
+    .catch(function(){ /* user cancelled the picker */ });
+}
+function scheduleFileWrite(){
+  if(!fileHandle) return;
+  clearTimeout(fileWriteTimer);
+  fileWriteTimer = setTimeout(writeToLinkedFile, 800);
+}
+function writeToLinkedFile(){
+  if(!fileHandle) return Promise.resolve();
+  return fileHandle.createWritable().then(function(writable){
+    return writable.write(JSON.stringify(buildPayload(), null, 2)).then(function(){ return writable.close(); });
+  }).catch(function(e){ console.warn('Could not write to linked save file', e); });
+}
+window.addEventListener('beforeprint', function(){ fillableEls.forEach(autosize); });
+
+/* ================= Self-marking numeric questions (hints only, no answer reveal) ================= */
+function parseNumber(str){
+  if(typeof str !== 'string') return null;
+  const cleaned = str.trim().replace(/,/g, '');
+  if(cleaned === '' || isNaN(cleaned)) return null;
+  return parseFloat(cleaned);
+}
+function nearlyEqual(a, b, relTol){
+  relTol = (relTol === undefined) ? 1e-6 : relTol;
+  const diff = Math.abs(a - b);
+  return diff <= relTol * Math.max(1, Math.abs(b));
+}
+function toggleHint(btn){
+  const panel = btn.parentElement.querySelector('.hint-panel') || btn.closest('.question, .dnd-panel, .match-body').querySelector('.hint-panel');
+  if(panel) panel.classList.toggle('shown');
+}
+function checkAnswer(btn){
+  const q = btn.closest('.sm-question');
+  const input = q.querySelector('.sm-input');
+  const feedback = q.querySelector('.sm-feedback');
+  const raw = input.value;
+  const val = parseNumber(raw);
+  if(val === null){
+    feedback.textContent = 'Type a number to check your answer.';
+    feedback.className = 'sm-feedback incorrect';
+    q.dataset.attempted = '1'; q.dataset.correct = '0';
+    updateProgress(); scheduleFileWrite();
+    return;
+  }
+  let ok;
+  if(q.dataset.min !== undefined && q.dataset.max !== undefined){
+    ok = val >= parseFloat(q.dataset.min) && val <= parseFloat(q.dataset.max);
+  } else {
+    const target = parseFloat(q.dataset.answer);
+    const tol = q.dataset.tol ? parseFloat(q.dataset.tol) : 1e-6;
+    ok = nearlyEqual(val, target, tol);
+  }
+  q.dataset.attempted = '1';
+  q.dataset.correct = ok ? '1' : '0';
+  setSmFeedback(q, true, ok);
+  updateProgress();
+  scheduleFileWrite();
+}
+
+function checkTimeRange(btn){
+  const q = btn.closest('.sm-question');
+  const feedback = q.querySelector('.sm-feedback');
+  const startVal = parseNumber(document.getElementById('lq5-start').value);
+  const endVal = parseNumber(document.getElementById('lq5-end').value);
+  if(startVal === null || endVal === null){
+    feedback.textContent = 'Type both times to check your answer.';
+    feedback.className = 'sm-feedback incorrect';
+    q.dataset.attempted = '1'; q.dataset.correct = '0';
+    updateProgress(); scheduleFileWrite();
+    return;
+  }
+  const ok = nearlyEqual(startVal, parseFloat(q.dataset.startAnswer || 20), 1e-6) && nearlyEqual(endVal, parseFloat(q.dataset.endAnswer || 40), 1e-6);
+  q.dataset.attempted = '1';
+  q.dataset.correct = ok ? '1' : '0';
+  setSmFeedback(q, true, ok);
+  updateProgress();
+  scheduleFileWrite();
+}
+
+/* ================= Drag-and-drop labeling (click-to-place fallback included) ================= */
+let selectedChip = null;
+
+function clearZone(zone){
+  zone.innerHTML = '';
+  zone.classList.remove('filled', 'correct', 'incorrect', 'dragover');
+  zone.dataset.attempted = '0';
+  zone.dataset.correct = '0';
+}
+
+function resetDndBankOrder(){
+  const bank = document.getElementById('dndBank');
+  if(!bank) return;
+  document.querySelectorAll('.dnd-chip').forEach(function(chip){
+    chip.classList.remove('placed', 'selected');
+    bank.appendChild(chip);
+  });
+  selectedChip = null;
+}
+
+function placeChipInZone(chip, zone, doAutosave){
+  // if the zone already holds a chip, return it to the bank first
+  const existing = zone.querySelector('.placed-chip');
+  if(existing){
+    const bank = document.getElementById('dndBank');
+    existing.classList.remove('placed');
+    bank.appendChild(existing);
+  }
+  chip.classList.add('placed');
+  chip.classList.remove('selected');
+  zone.innerHTML = '';
+  const span = document.createElement('span');
+  span.className = 'placed-chip';
+  span.textContent = chip.textContent;
+  span.dataset.category = chip.dataset.category;
+  span.title = 'Click to remove this label';
+  zone.appendChild(span);
+  const mark = document.createElement('span');
+  mark.className = 'dnd-mark';
+  zone.appendChild(mark);
+
+  const ok = chip.dataset.category === zone.dataset.answer;
+  zone.classList.add('filled');
+  zone.classList.toggle('correct', ok);
+  zone.classList.toggle('incorrect', !ok);
+  mark.textContent = ok ? '\u2713' : '\u2717';
+  mark.className = 'dnd-mark ' + (ok ? 'correct' : 'incorrect');
+  zone.dataset.attempted = '1';
+  zone.dataset.correct = ok ? '1' : '0';
+
+  selectedChip = null;
+  updateProgress();
+  if(doAutosave !== false) scheduleFileWrite();
+}
+
+function initDragAndDrop(){
+  document.querySelectorAll('.dnd-chip').forEach(function(chip){
+    chip.addEventListener('dragstart', function(e){
+      e.dataTransfer.setData('text/plain', chip.id);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    chip.addEventListener('click', function(){
+      if(chip.classList.contains('placed')) return;
+      document.querySelectorAll('.dnd-chip.selected').forEach(function(c){ c.classList.remove('selected'); });
+      if(selectedChip === chip){ selectedChip = null; return; }
+      selectedChip = chip;
+      chip.classList.add('selected');
+    });
+  });
+  document.querySelectorAll('.dnd-zone').forEach(function(zone){
+    zone.addEventListener('dragover', function(e){ e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', function(){ zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', function(e){
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      const id = e.dataTransfer.getData('text/plain');
+      const chip = document.getElementById(id);
+      if(chip) placeChipInZone(chip, zone);
+    });
+    zone.addEventListener('click', function(){
+      if(selectedChip){
+        placeChipInZone(selectedChip, zone);
+      } else {
+        const placed = zone.querySelector('.placed-chip');
+        if(placed){
+          const bank = document.getElementById('dndBank');
+          const chip = document.querySelector('.dnd-chip[data-category="' + placed.dataset.category + '"].placed');
+          clearZone(zone);
+          if(chip){ chip.classList.remove('placed'); bank.appendChild(chip); }
+          updateProgress();
+          scheduleFileWrite();
+        }
+      }
+    });
+  });
+}
+
+/* ================= Matching (checkbox) activity ================= */
+function checkMatch(btn){
+  const row = btn.closest('.match-row');
+  const feedback = row.querySelector('.sm-feedback');
+  const correctSet = row.dataset.correct2.split('|').filter(Boolean);
+  const checked = Array.prototype.slice.call(row.querySelectorAll('input[type=checkbox]:checked')).map(function(cb){ return cb.value; });
+  const ok = checked.length === correctSet.length && checked.every(function(v){ return correctSet.indexOf(v) !== -1; });
+  row.dataset.attempted = '1';
+  row.dataset.correct = ok ? '1' : '0';
+  setMatchFeedback(row, true, ok);
+  updateProgress();
+  scheduleFileWrite();
+}
+
+/* ================= Progress ================= */
+function updateProgress(){
+  const sm = Array.prototype.slice.call(document.querySelectorAll('.sm-question'));
+  const dnd = Array.prototype.slice.call(document.querySelectorAll('.dnd-zone'));
+  const match = Array.prototype.slice.call(document.querySelectorAll('.match-row'));
+  const all = sm.concat(dnd).concat(match);
+  const attempted = all.filter(function(el){ return el.dataset.attempted === '1'; }).length;
+  const correct = all.filter(function(el){ return el.dataset.correct === '1'; }).length;
+  const el = document.getElementById('progressStatus');
+  if(el) el.textContent = 'Checked ' + attempted + '/' + all.length + ' \u00b7 ' + correct + ' correct';
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.sm-question, .match-row').forEach(function(q){
+    q.dataset.attempted = q.dataset.attempted || '0';
+    q.dataset.correct = q.dataset.correct || '0';
+  });
+  document.querySelectorAll('.dnd-zone').forEach(function(z){
+    z.dataset.attempted = '0'; z.dataset.correct = '0';
+  });
+  initFillables();
+  initDragAndDrop();
+  updateProgress();
+  if(fsaSupported){
+    document.getElementById('btnLinkFile').style.display = '';
+    tryRestoreLinkedFile();
+  }
+  updateSaveStatus();
+});
+
+</script>
+</body>
+</html>
