@@ -15,12 +15,9 @@
   }
   *{box-sizing:border-box;}
   body{margin:0; font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:#f7f9fb; line-height:1.55; font-size:16.5px; padding-top:56px;}
-  .layout{display:flex; min-height:calc(100vh - 56px);}
-  nav.sidebar{width:250px; flex-shrink:0; background:var(--navy); color:#fff; padding:1.25rem 1rem; position:sticky; top:56px; height:calc(100vh - 56px); overflow-y:auto;}
-  nav.sidebar h1{font-size:1.05rem; line-height:1.3; margin:0 0 1rem 0; color:#fff;}
-  nav.sidebar a{display:block; color:#cfe3ee; text-decoration:none; font-size:0.88rem; padding:0.4rem 0.5rem; border-radius:6px; margin-bottom:0.15rem;}
-  nav.sidebar a:hover{background:rgba(255,255,255,0.12); color:#fff;}
-  main{flex:1; max-width:960px; margin:0 auto; padding:2rem 2.5rem 5rem 2.5rem;}
+  /* No sidebar nav (dropped 2026-09-16, per Paul) -- .topbar-title is now the only
+     on-page place the workbook name persists once a student scrolls past the cover. */
+  main{max-width:960px; margin:0 auto; padding:2rem 2.5rem 5rem 2.5rem;}
   .cover{background:linear-gradient(135deg,var(--navy),var(--teal-dark)); color:#fff; border-radius:14px; padding:2.5rem 2.5rem; margin-bottom:2rem;}
   .cover h1{margin:0 0 0.4rem 0; font-size:1.9rem;}
   .name-box{margin-top:1.4rem; background:rgba(255,255,255,0.1); border:1px dashed rgba(255,255,255,0.5); border-radius:8px; padding:0.9rem 1.1rem;}
@@ -127,8 +124,7 @@
   footer.page{font-size:0.8rem; color:#7c8b98; text-align:center; margin-top:2rem;}
 
   @media print{
-    nav.sidebar, .topbar, .check-btn, .hint-btn, .dnd-reset-btn{display:none !important;}
-    .layout{display:block;}
+    .topbar, .check-btn, .hint-btn, .dnd-reset-btn{display:none !important;}
     main{max-width:100%; padding:0; margin:0;}
     body{background:#fff; font-size:11pt; padding-top:0;}
     section.topic{border:none; box-shadow:none; padding:0; margin:0 0 1.2rem 0; page-break-inside:avoid;}
@@ -162,17 +158,8 @@
   </div>
   <button class="primary" onclick="window.print()">&#128424;&#65039; Print / Save as PDF</button>
 </div>
-<div class="layout">
-  <nav class="sidebar no-print">
-    <h1>Motion Graphs</h1>
-    <a href="#cover">Cover &amp; goals</a>
-    <a href="#s1">1. Label the Graph</a>
-    <a href="#s2">2. Match the Graphs</a>
-    <a href="#s3">3. The Motorbike&rsquo;s Journey</a>
-    <a href="#sG">Glossary</a>
-  </nav>
 
-  <main>
+<main>
     <section class="cover" id="cover">
       <h1>Motion Graphs &mdash; A Motorbike&rsquo;s Journey</h1>
       <div class="goals" style="margin-top:1.3rem;">
@@ -467,13 +454,11 @@
 
     <footer class="page no-print">Motion Graphs Workbook &middot; Companion resources: <em>Distance&ndash;Time Gradient Calculations</em>, <em>Motion Graphs 2</em>.</footer>
   </main>
-</div>
 
 <script>
 
-const STORAGE_PREFIX = 'ib-motion-graphs-motorbike-v1-';
-const WORKBOOK_ID    = 'motion-graphs-motorbike';
-const TRIALS_DB_NAME = STORAGE_PREFIX + 'linked-file';
+const WORKBOOK_ID     = 'motion-graphs-motorbike';
+const STORAGE_PREFIX  = 'ib-workbook-' + WORKBOOK_ID + '-v1-';
 let fillableEls = [];
 
 function storageAvailable(){
@@ -654,7 +639,7 @@ let fileWriteTimer = null;
 
 function idbOpen(){
   return new Promise(function(resolve, reject){
-    const rq = indexedDB.open(TRIALS_DB_NAME, 1);
+    const rq = indexedDB.open('ib-workbook-fs', 1);
     rq.onupgradeneeded = function(){ if(!rq.result.objectStoreNames.contains('handles')) rq.result.createObjectStore('handles'); };
     rq.onsuccess = function(){ resolve(rq.result); };
     rq.onerror = function(){ reject(rq.error); };
@@ -664,7 +649,7 @@ function idbGetHandle(){
   return idbOpen().then(function(db){
     return new Promise(function(resolve){
       const tx = db.transaction('handles', 'readonly');
-      const rq = tx.objectStore('handles').get('fileHandle');
+      const rq = tx.objectStore('handles').get(WORKBOOK_ID);
       rq.onsuccess = function(){ resolve(rq.result || null); };
       rq.onerror = function(){ resolve(null); };
     });
@@ -673,7 +658,7 @@ function idbGetHandle(){
 function idbSetHandle(handle){
   return idbOpen().then(function(db){
     const tx = db.transaction('handles', 'readwrite');
-    tx.objectStore('handles').put(handle, 'fileHandle');
+    tx.objectStore('handles').put(handle, WORKBOOK_ID);
   }).catch(function(){});
 }
 function updateLinkButton(){
