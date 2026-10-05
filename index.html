@@ -134,14 +134,6 @@
     color: var(--muted);
     font-size: 0.92rem;
   }
-  .filename {
-    display: block;
-    margin-top: 0.3rem;
-    font-size: 0.72rem;
-    color: #9aa4b1;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    word-break: break-all;
-  }
   .empty-note {
     padding: 1rem 1.5rem;
     color: var(--muted);
@@ -168,12 +160,17 @@
 <main>
 
   <!-- Mechanics -->
-  <section class="topic placeholder">
+  <section class="topic">
     <div class="topic-header">
       <h2>Mechanics</h2>
-      <span class="status pending">Coming soon</span>
+      <span class="status ready">1 resource</span>
     </div>
-    <p class="empty-note">No resources published yet — check back soon.</p>
+    <ul class="resource-list">
+      <li>
+        <a href="units/mechanics/motion_graphs_motorbike.html" target="_blank" rel="noopener">Motion Graphs &mdash; A Motorbike&rsquo;s Journey</a>
+        <p>Labelling and interpreting distance&ndash;time graphs, and calculating speed and velocity from their gradient, using a motorbike&rsquo;s journey as the worked example.</p>
+      </li>
+    </ul>
   </section>
 
   <!-- Tools -->
@@ -185,8 +182,7 @@
     <ul class="resource-list">
       <li>
         <a href="units/tools/science_toolkit_basics_concept_check.html" target="_blank" rel="noopener">Science Toolkit Basics &mdash; Concept Check</a>
-        <p>Self-marking concept check covering the toolkit every physics investigation relies on: converting between metric prefixes, rounding to a stated place value, scientific (standard form) notation, and applying the rules for significant figures.</p>
-        <span class="filename">units/tools/science_toolkit_basics_concept_check.html</span>
+        <p>Converting metric prefixes, rounding, scientific notation, and significant figures &mdash; a self-marking concept check of the core physics toolkit.</p>
       </li>
     </ul>
   </section>
