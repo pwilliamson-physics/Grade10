@@ -146,6 +146,30 @@
   ol.steps{margin:0.4rem 0 0.8rem 0; padding-left:1.3rem; font-size:0.94rem;}
   ol.steps li{margin-bottom:0.2rem;}
 
+  /* ---------- extension crash lab ---------- */
+  .lab-controls{flex:1 1 250px;}
+  .lab-row{display:grid; grid-template-columns:1fr 4.2rem; gap:0.2rem 0.5rem; align-items:center; margin-bottom:0.55rem;}
+  .lab-row label{grid-column:1 / -1; font-size:0.84rem; margin:0;}
+  .lab-row select{grid-column:1 / -1; font:inherit; font-size:0.86rem; padding:0.25rem 0.4rem; border-radius:6px;}
+  .lab-row input[type="range"]{width:100%;}
+  .lab-row.sub{padding-left:0.8rem; border-left:2px solid rgba(255,255,255,0.18);}
+  .lab-row.off{opacity:0.4;}
+  .lab-num{width:4.2rem; font:inherit; font-size:0.86rem; padding:0.15rem 0.3rem; border-radius:5px; border:1px solid #9fb2c3; text-align:right;}
+  .lab-check{margin:0.2rem 0 0.35rem 0; font-size:0.9rem;}
+  .lab-check input{margin-right:0.35rem;}
+  .lab-results{display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; margin:0.7rem 0 0 0;}
+  .lab-stat{background:rgba(255,255,255,0.08); border-radius:8px; padding:0.45rem 0.65rem; font-size:0.76rem; color:#b9cbd8; text-align:left;}
+  .lab-stat b{display:block; font-size:1.02rem; color:#fff; margin-top:0.1rem;}
+  .lab-stat.big{background:rgba(255,209,102,0.14);}
+  .lab-stat.big b{font-size:1.15rem; color:#ffd166;}
+  .lab-stat b.risk-low{color:#7ee2a0 !important;} .lab-stat b.risk-mod{color:#ffd166 !important;} .lab-stat b.risk-high{color:#ff8a7a !important;}
+  @media (max-width: 620px){ .lab-results{grid-template-columns:repeat(2,1fr);} }
+  table.lab-log{font-size:0.8rem;}
+  table.lab-log th, table.lab-log td{padding:0.3rem 0.4rem; white-space:nowrap;}
+  table.lab-log tr.empty td{color:#7c8b98; font-style:italic;}
+  .risk-low{color:var(--good) !important;} .risk-mod{color:#b7791f !important;} .risk-high{color:var(--bad) !important;}
+  .lab-note{font-size:0.8rem; color:#5b6b78; font-style:italic; margin-top:0.6rem;}
+
   @media (max-width: 620px){
     main{padding:1.2rem 1rem 4rem 1rem;}
     section.topic{padding:1.2rem 1rem;}
@@ -235,6 +259,7 @@
         <li>use F = Δp ÷ Δt to find the force in a collision</li>
         <li>explain, using a graph, why a longer collision time means a smaller force</li>
         <li>explain how crumple zones, seat belts, airbags and other features protect the people inside a car</li>
+        <li><em>Extension:</em> design a safe car in a crash test lab</li>
       </ul>
     </div>
   </section>
@@ -746,6 +771,129 @@
       <textarea class="answer-lines" rows="5" placeholder="Type your answer here…"></textarea>
     </div>
   </section>
+  <!-- ================= SECTION 5: EXTENSION — CRASH TEST LAB ================= -->
+  <section class="topic" id="s5">
+    <h2>5. Extension: crash test lab <span class="time-pill">fast finishers</span></h2>
+    <p>This lab lets you design the whole car. In a real crash many things happen at once: the crumple zone squashes, the safety cell may start to crush if it is too weak, and the dummy moves forwards into the seat belt and airbag. The lab works all of this out and tells you the <strong>maximum force on the dummy</strong>.</p>
+    <div class="keybox"><strong>What the settings mean.</strong>
+      <ul style="margin:0.4rem 0 0 0; padding-left:1.2rem;">
+        <li><strong>Crumple zone rigidity</strong> (kN) — the force the crumple zone pushes back with while it squashes. Low = soft, high = stiff.</li>
+        <li><strong>Safety cell rigidity</strong> (kN) — the force needed to crush the passenger compartment.</li>
+        <li><strong>Seat belt stiffness</strong> (kN/m) — how hard the belt pulls back for each metre it stretches.</li>
+        <li><strong>Airbag rigidity</strong> (kN) — the force the airbag pushes back with as the dummy sinks into it.</li>
+      </ul>
+    </div>
+
+    <figure class="wide">
+      <div class="sim-wrap lab-wrap">
+        <div class="sim-canvas-box">
+          <svg id="labOut" viewBox="0 0 520 150" role="img" aria-label="Outside view of the crash test: a car with a crumple zone hits a barrier.">
+            <rect x="0" y="0" width="520" height="150" fill="#eaf5fb"/>
+            <rect x="0" y="142" width="520" height="8" fill="#6d7880"/>
+            <use href="#barrier" x="470" y="20" width="36" height="122"/>
+            <text x="8" y="16" font-size="11" font-weight="700" fill="#0a5b62">OUTSIDE VIEW</text>
+            <text x="8" y="30" font-size="11" font-weight="700" fill="#0a5b62" id="labSlowLabel">SLOW MOTION ×25</text>
+            <g id="labCar" transform="translate(150,58)">
+              <use id="labCarBody" href="#cartoonCar" x="0" y="0" width="200" height="90"/>
+              <path id="labCage" d="" fill="none" stroke="#c0392b" stroke-width="4" stroke-linejoin="round" style="display:none"/>
+              <g id="labCZ"></g>
+            </g>
+          </svg>
+          <svg id="labIn" viewBox="0 0 520 170" role="img" aria-label="Inside view: the crash-test dummy moves forwards into the seat belt and airbag." style="margin-top:8px;">
+            <rect x="0" y="0" width="520" height="170" fill="#f4efe6"/>
+            <text x="8" y="16" font-size="11" font-weight="700" fill="#7a6548">INSIDE VIEW (moving with the car)</text>
+            <rect x="0" y="150" width="520" height="20" fill="#9c8a6e"/>
+            <!-- seat -->
+            <path d="M60 150 L60 70 Q60 52 78 52 L92 52 Q104 52 104 66 L104 112 L170 112 Q182 112 182 124 L182 150 Z" fill="#59636b"/>
+            <line x1="96" y1="30" x2="96" y2="56" stroke="#3b444b" stroke-width="6"/>
+            <!-- dashboard + wheel (moved by JS if the cabin is crushed) -->
+            <g id="labDash">
+              <path d="M0 0 L120 0 L120 110 L40 110 Q20 110 20 90 L20 40 Q20 14 0 10 Z" fill="#3b444b" transform="translate(0,40)"/>
+              <line x1="10" y1="70" x2="-26" y2="92" stroke="#2b2b2b" stroke-width="8" stroke-linecap="round"/>
+              <ellipse id="labWheel" cx="-30" cy="78" rx="9" ry="32" fill="none" stroke="#2b2b2b" stroke-width="7"/>
+            </g>
+            <ellipse id="labBag" cx="0" cy="70" rx="0" ry="0" fill="#ffffff" stroke="#9aa5ad" stroke-width="2" style="display:none"/>
+            <!-- dummy -->
+            <g id="labDummy">
+              <rect x="88" y="62" width="40" height="52" rx="14" fill="#ffd166" stroke="#a6761d" stroke-width="2"/>
+              <rect x="112" y="104" width="62" height="16" rx="8" fill="#ffd166" stroke="#a6761d" stroke-width="2"/>
+              <rect x="160" y="110" width="16" height="40" rx="7" fill="#ffd166" stroke="#a6761d" stroke-width="2"/>
+              <g id="labHead">
+                <circle cx="110" cy="42" r="17" fill="#ffd166" stroke="#a6761d" stroke-width="2"/>
+                <path d="M110 25 A17 17 0 0 1 127 42 L110 42 Z" fill="#2b2b2b"/>
+                <path d="M110 59 A17 17 0 0 1 93 42 L110 42 Z" fill="#2b2b2b"/>
+              </g>
+              <rect x="114" y="74" width="40" height="11" rx="5.5" fill="#ffd166" stroke="#a6761d" stroke-width="2"/>
+            </g>
+            <line id="labBelt1" x1="96" y1="34" x2="126" y2="104" stroke="#173a5e" stroke-width="5" stroke-linecap="round"/>
+            <line id="labBelt2" x1="104" y1="112" x2="150" y2="112" stroke="#173a5e" stroke-width="5" stroke-linecap="round"/>
+            <text id="labHit" x="512" y="34" text-anchor="end" font-size="15" font-weight="800" fill="#c0392b" style="display:none">OUCH! Hit the wheel</text>
+          </svg>
+          <div class="lab-results">
+            <div class="lab-stat"><span>Crumple zone squashed</span><b id="rCZ">–</b></div>
+            <div class="lab-stat"><span>Safety cell crushed</span><b id="rSC">–</b></div>
+            <div class="lab-stat"><span>Dummy moved forward</span><b id="rD">–</b></div>
+            <div class="lab-stat"><span>Hit steering wheel?</span><b id="rHit">–</b></div>
+            <div class="lab-stat big"><span>Max force on dummy</span><b id="rF">–</b></div>
+            <div class="lab-stat big"><span>Injury risk</span><b id="rRisk">–</b></div>
+          </div>
+        </div>
+        <div class="sim-controls lab-controls">
+          <h4>Design</h4>
+          <div class="lab-row"><label for="labType">Car</label>
+            <select id="labType"><option value="1100">Subcompact (1100 kg)</option><option value="1500" selected>Sedan (1500 kg)</option><option value="2150">SUV (2150 kg)</option></select></div>
+          <div class="lab-row"><label for="labV">Speed (m/s)</label><input type="range" id="labV" min="5" max="30" step="1" value="16"><input type="number" class="lab-num" data-for="labV" min="5" max="30" step="1" value="16"></div>
+          <div class="lab-row"><label for="labL">Crumple zone length (cm)</label><input type="range" id="labL" min="10" max="120" step="5" value="90"><input type="number" class="lab-num" data-for="labL" min="10" max="120" step="5" value="90"></div>
+          <div class="lab-row"><label for="labFc">Crumple zone rigidity (kN)</label><input type="range" id="labFc" min="100" max="1000" step="10" value="300"><input type="number" class="lab-num" data-for="labFc" min="100" max="1000" step="10" value="300"></div>
+          <div class="lab-row"><label for="labFs">Safety cell rigidity (kN)</label><input type="range" id="labFs" min="100" max="2000" step="50" value="1500"><input type="number" class="lab-num" data-for="labFs" min="100" max="2000" step="50" value="1500"></div>
+          <div class="lab-check"><label><input type="checkbox" id="labBeltOn" checked> Seat belt present</label></div>
+          <div class="lab-row sub"><label for="labK">Seat belt stiffness (kN/m)</label><input type="range" id="labK" min="0" max="200" step="5" value="100"><input type="number" class="lab-num" data-for="labK" min="0" max="200" step="5" value="100"></div>
+          <div class="lab-check"><label><input type="checkbox" id="labBagOn"> Airbag present</label></div>
+          <div class="lab-row sub"><label for="labFa">Airbag rigidity (kN)</label><input type="range" id="labFa" min="0" max="40" step="1" value="22"><input type="number" class="lab-num" data-for="labFa" min="0" max="40" step="1" value="22"></div>
+          <div class="sim-btns">
+            <button id="labRun">▶ Crash test</button>
+            <button id="labReset" class="alt">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+      <p class="sim-print-note">Interactive crash test lab — open the online version of this workbook to use it.</p>
+      <figcaption>Fig. 5.1 Crash test lab. Top: the car hits the barrier. Bottom: what happens to the dummy inside.</figcaption>
+    </figure>
+
+
+    <div class="graph-box">
+      <svg id="labGraph" viewBox="0 0 520 240" role="img" aria-label="Graph of the force on the dummy against time during the last crash test."></svg>
+    </div>
+    <p style="text-align:center; font-size:0.85rem; color:#5b6b78; margin-top:-0.4rem;">Fig. 5.2 Force on the dummy during the last test. The area under the graph is the dummy's impulse — it is the same every time at the same speed.</p>
+
+    <h3>Your test log</h3>
+    <div class="table-scroll">
+      <table class="data-table lab-log">
+        <thead><tr><th>#</th><th>Car</th><th>Speed<br>m/s</th><th>CZ length<br>cm</th><th>CZ rigidity<br>kN</th><th>Cell rigidity<br>kN</th><th>Belt<br>kN/m</th><th>Airbag<br>kN</th><th>CZ squashed<br>cm</th><th>Cell crushed<br>cm</th><th>Max force<br>kN</th><th>Risk</th></tr></thead>
+        <tbody id="labLog"><tr class="empty"><td colspan="12">Every crash test you run is added here automatically.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="graph-tools"><button class="no-print" onclick="labClearLog()">Clear log</button><span>The log is saved with your answers.</span></div>
+    <p class="lab-note">This is a simplified model. The crumple zone and safety cell push back with a constant force while they squash, the seat belt acts like a damped spring, the airbag pushes with a constant force as it deflates, and the injury-risk bands are a rough guide only.</p>
+
+    <h3>Lab questions</h3>
+    <div class="question">
+      <span class="qnum">24</span><strong>Set: Sedan, 16 m/s, crumple zone 90 cm, safety cell 1500 kN, seat belt 100 kN/m, airbag off. Run tests with crumple zone rigidities of 100, 200, 300 and 400 kN. What happens to the crumple zone and to the maximum force on the dummy? Why is a crumple zone that is too soft just as bad as one that is too stiff?</strong>
+      <textarea class="answer-lines" rows="4" placeholder="Type your answer here…"></textarea>
+    </div>
+    <div class="question">
+      <span class="qnum">25</span><strong>Keep the crumple zone rigidity at 300 kN and lower the safety cell rigidity to 200 kN. What happens? Why must the safety cell be stronger than the crumple zone?</strong>
+      <textarea class="answer-lines" rows="3" placeholder="Type your answer here…"></textarea>
+    </div>
+    <div class="question">
+      <span class="qnum">26</span><strong>Now turn the airbag on. Find the seat belt stiffness and airbag rigidity that give the lowest force on the dummy. Write down your best settings and use the idea of impulse to explain why they work.</strong>
+      <textarea class="answer-lines" rows="4" placeholder="Type your answer here…"></textarea>
+    </div>
+    <div class="question">
+      <span class="qnum">27</span><strong>Design challenge: choose the SUV and a speed of 20 m/s. Design the safest car you can — the lowest force on the dummy, without crushing the safety cell. Record your settings and your result.</strong>
+      <textarea class="answer-lines" rows="3" placeholder="Type your answer here…"></textarea>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -913,7 +1061,7 @@ function updateProgress(){
   document.getElementById('progressStatus').textContent = 'Checked ' + att + '/' + qs.length + ' · ' + cor + ' correct';
 }
 
-function getExtraState(){ return { checked: checkedIds.slice(), curveShown: curveShown }; }
+function getExtraState(){ return { checked: checkedIds.slice(), curveShown: curveShown, crashLog: (window.labGetLog ? window.labGetLog() : []) }; }
 function saveExtraLocal(){
   if(canStore){ try{ localStorage.setItem(STORAGE_PREFIX + 'extra', JSON.stringify(getExtraState())); } catch(e){} }
 }
@@ -927,6 +1075,7 @@ function applyExtraState(data){
   checkedIds = [];
   (data.checked || []).forEach(function(id){ checkQuestion(id, true); });
   curveShown = !!data.curveShown;
+  if(window.labSetLog) window.labSetLog(data.crashLog || []);
   saveExtraLocal();
   drawFtGraph(); drawBarGraph(); updateProgress();
 }
@@ -1263,6 +1412,294 @@ function drawBarGraph(){
   lenSl.addEventListener('input', reset);
   spSel.addEventListener('change', reset);
   reset();
+})();
+
+/* ================= Extension: crash test lab =================
+   Simplified 1-D model (same as tested offline):
+   - Car (mass M) hits a rigid barrier. The weaker of crumple zone (force Fc, length L)
+     and safety cell (force Fs, crush length 0.6 m) yields first at constant force, then
+     the other; after both are used up the car stops very abruptly (stiff spring).
+   - Dummy (75 kg) starts 0.50 m from the steering wheel (less if the cabin is crushed).
+     Seat belt: damped spring (k, 30% critical damping), pulls only.
+     Airbag: constant force Fa once the dummy has moved 0.12 m forward and is still moving in.
+     Steering wheel: very stiff damped spring.
+   Integrated with semi-implicit Euler, dt = 10 µs; sampled every 0.25 ms for playback. */
+(function(){
+  const outSvg = document.getElementById('labOut');
+  if(!outSvg) return;
+  const $ = function(id){ return document.getElementById(id); };
+  const DUMMY_M = 75, CELL_LEN = 0.6, K_RIGID = 2e7, K_WHEEL = 3e6, GAP0 = 0.5, BAG_START = 0.12;
+  const SLOW = 25;
+  const OUT_PX = 50, IN_PX = 300, WALL = 470, PLATE = 5;
+  let log = [];
+  let anim = null;
+
+  function settings(){
+    const typeSel = $('labType');
+    return {
+      M: parseFloat(typeSel.value), type: typeSel.options[typeSel.selectedIndex].text.split(' (')[0],
+      v: parseFloat($('labV').value), L: parseFloat($('labL').value) / 100,
+      Fc: parseFloat($('labFc').value), Fs: parseFloat($('labFs').value),
+      belt: $('labBeltOn').checked, k: parseFloat($('labK').value),
+      bag: $('labBagOn').checked, Fa: parseFloat($('labFa').value)
+    };
+  }
+
+  function simulate(p){
+    const M = p.M, Fc = p.Fc * 1e3, Fs = p.Fs * 1e3, k = p.k * 1e3, Fa = p.Fa * 1e3, m = DUMMY_M;
+    const czFirst = Fc <= Fs;
+    const A = czFirst ? {F:Fc, len:p.L} : {F:Fs, len:CELL_LEN};
+    const B = czFirst ? {F:Fs, len:CELL_LEN} : {F:Fc, len:p.L};
+    const cb = k > 0 ? 2 * 0.3 * Math.sqrt(k * m) : 0;
+    const cw = 2 * 0.2 * Math.sqrt(K_WHEEL * m);
+    let xc = 0, vc = p.v, xd = 0, vd = p.v, t = 0, tStop = null;
+    let Fmax = 0, sMax = 0, hit = false, cz = 0, sc = 0, tPeak = null;
+    const dt = 1e-5, every = 25, samples = [];
+    let n = 0;
+    while(t < 0.6){
+      if(vc > 0){
+        let F;
+        if(xc < A.len) F = A.F;
+        else if(xc < A.len + B.len) F = B.F;
+        else F = Math.max(B.F, K_RIGID * (xc - A.len - B.len));
+        vc -= F / M * dt;
+        if(vc <= 0){ vc = 0; if(tStop === null) tStop = t; }
+      }
+      xc += vc * dt;
+      cz = czFirst ? Math.min(xc, p.L) : Math.min(Math.max(xc - CELL_LEN, 0), p.L);
+      sc = czFirst ? Math.min(Math.max(xc - p.L, 0), CELL_LEN) : Math.min(xc, CELL_LEN);
+      const gap = GAP0 - 0.5 * sc;
+      const s = xd - xc, u = vd - vc;
+      let Fd = 0, Fbag = 0;
+      if(p.belt && k > 0 && s > 0) Fd += Math.max(0, k * s + cb * u);
+      if(p.bag && s > BAG_START && u > 0){ Fbag = Fa * Math.min(1, (s - BAG_START) / 0.03); Fd += Fbag; }
+      if(s > gap){ Fd += Math.max(0, K_WHEEL * (s - gap) + cw * u); hit = true; }
+      vd -= Fd / m * dt;
+      xd += vd * dt;
+      if(Fd > Fmax) Fmax = Fd;
+      if(s > sMax) sMax = s;
+      t += dt;
+      if(n++ % every === 0) samples.push({t:t, xc:xc, s:s, F:Fd / 1e3, cz:cz, sc:sc, gap:gap});
+      if(tPeak === null && s > 0.01 && vd - vc <= 0) tPeak = t;   // dummy reached its furthest point
+      if(tStop !== null && tPeak !== null && t > Math.max(tStop, tPeak) + 0.02) break;
+    }
+    samples.push({t:t, xc:xc, s:xd - xc, F:0, cz:cz, sc:sc, gap:GAP0 - 0.5 * sc});
+    return { samples:samples, Fmax:Fmax / 1e3, sMax:sMax, hit:hit, cz:cz, sc:sc, tEnd:t };
+  }
+
+  function risk(r){
+    if(r.sc > 0.2) return {text:'Very high — cabin crushed', cls:'risk-high', short:'Very high'};
+    if(r.Fmax > 60) return {text:'Very high', cls:'risk-high', short:'Very high'};
+    if(r.Fmax > 30) return {text:'High', cls:'risk-high', short:'High'};
+    if(r.Fmax > 15) return {text:'Moderate', cls:'risk-mod', short:'Moderate'};
+    return {text:'Low', cls:'risk-low', short:'Low'};
+  }
+
+  /* ---------- drawing ---------- */
+  function drawOutside(p, cz, sc, approachX){
+    const sx = 1 - sc * OUT_PX / 184;
+    const bodyFront = 8 + 184 * sx;
+    const czW = Math.max(2, (p.L - cz) * OUT_PX);
+    const carX = WALL - (bodyFront + czW + PLATE) - (approachX || 0);
+    $('labCar').setAttribute('transform', 'translate(' + carX.toFixed(1) + ',58)');
+    $('labCarBody').setAttribute('transform', 'translate(8,0) scale(' + sx.toFixed(4) + ',1) translate(-8,0)');
+    const nF = Math.max(3, Math.round(p.L * 12));
+    let pts = '';
+    for(let i = 0; i <= nF; i++) pts += (bodyFront + czW * i / nF).toFixed(1) + ',' + (i % 2 ? 61 : 45) + ' ';
+    $('labCZ').innerHTML =
+      '<rect x="' + bodyFront.toFixed(1) + '" y="43" width="' + czW.toFixed(1) + '" height="20" fill="#f2c14e" stroke="#5a1a0c" stroke-width="2"/>' +
+      '<polyline points="' + pts + '" fill="none" stroke="#5a1a0c" stroke-width="1.6"/>' +
+      '<rect x="' + (bodyFront + czW).toFixed(1) + '" y="38" width="' + PLATE + '" height="30" rx="2" fill="#7d8a94" stroke="#3b444b" stroke-width="2"/>';
+    const cage = $('labCage');
+    if(sc > 0.005){
+      const f = function(x){ return (8 + (x - 8) * sx).toFixed(1); };
+      cage.setAttribute('d', 'M' + f(54) + ' 38 Q' + f(66) + ' 12 ' + f(84) + ' 11 L' + f(128) + ' 11 Q' + f(144) + ' 12 ' + f(158) + ' 37 L' + f(158) + ' 64 L' + f(54) + ' 64 Z');
+      cage.style.display = '';
+    } else cage.style.display = 'none';
+  }
+
+  function drawInside(p, s, gap, bagInflate){
+    const shown = Math.min(s, gap + 0.02);
+    const dx = shown * IN_PX;
+    $('labDummy').setAttribute('transform', 'translate(' + dx.toFixed(1) + ',0)');
+    const lean = Math.max(0, Math.min(28, s * 70));
+    $('labHead').setAttribute('transform', 'rotate(' + lean.toFixed(1) + ' 110 58)');
+    const xw = 128 + gap * IN_PX + 12;
+    $('labDash').setAttribute('transform', 'translate(' + (xw + 30).toFixed(1) + ',0)');
+    const b1 = $('labBelt1'), b2 = $('labBelt2');
+    b1.style.display = b2.style.display = p.belt ? '' : 'none';
+    b1.setAttribute('x2', (126 + dx).toFixed(1));
+    b2.setAttribute('x2', (150 + dx).toFixed(1));
+    const bag = $('labBag');
+    if(p.bag && bagInflate > 0){
+      const right = xw - 8;
+      const fullLeft = 128 + BAG_START * IN_PX;
+      let left = right - (right - fullLeft) * bagInflate;
+      const chest = 128 + dx;
+      if(chest > left) left = Math.min(chest, right - 6);
+      bag.setAttribute('cx', ((left + right) / 2).toFixed(1));
+      bag.setAttribute('rx', ((right - left) / 2).toFixed(1));
+      bag.setAttribute('cy', '72');
+      bag.setAttribute('ry', (38 * Math.min(1, bagInflate * 1.2)).toFixed(1));
+      bag.style.display = '';
+    } else bag.style.display = 'none';
+  }
+
+  function niceMax(v){
+    const steps = [10, 20, 25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1500, 2000, 3000, 5000];
+    for(let i = 0; i < steps.length; i++) if(v <= steps[i]) return steps[i];
+    return Math.ceil(v / 1000) * 1000;
+  }
+  function drawGraph(res, upto){
+    const svg = $('labGraph');
+    while(svg.firstChild) svg.removeChild(svg.firstChild);
+    const X0 = 62, X1 = 505, Y0 = 200, Y1 = 14;
+    svg.appendChild(svgEl('rect', {x:0, y:0, width:520, height:240, fill:'#fff'}));
+    const tMaxMs = res ? Math.max(20, Math.ceil(res.tEnd * 1000 / 20) * 20) : 200;
+    const fMax = res ? niceMax(res.Fmax * 1.08) : 50;
+    const xs = function(ms){ return X0 + ms / tMaxMs * (X1 - X0); };
+    const ys = function(f){ return Y0 - Math.min(f, fMax) / fMax * (Y0 - Y1); };
+    const xStep = tMaxMs <= 100 ? 10 : (tMaxMs <= 300 ? 50 : 100);
+    for(let ms = 0; ms <= tMaxMs + 0.001; ms += xStep){
+      svg.appendChild(svgEl('line', {x1:xs(ms), y1:Y1, x2:xs(ms), y2:Y0, stroke:'#e3e9ef'}));
+      svg.appendChild(svgEl('text', {x:xs(ms), y:Y0 + 16, 'text-anchor':'middle', 'font-size':11, fill:'#173a5e'}, String(ms)));
+    }
+    for(let i = 0; i <= 5; i++){
+      const f = fMax * i / 5;
+      svg.appendChild(svgEl('line', {x1:X0, y1:ys(f), x2:X1, y2:ys(f), stroke:'#e3e9ef'}));
+      svg.appendChild(svgEl('text', {x:X0 - 7, y:ys(f) + 4, 'text-anchor':'end', 'font-size':11, fill:'#173a5e'}, String(Math.round(f * 10) / 10)));
+    }
+    svg.appendChild(svgEl('line', {x1:X0, y1:Y0, x2:X1, y2:Y0, stroke:'#173a5e', 'stroke-width':2}));
+    svg.appendChild(svgEl('line', {x1:X0, y1:Y0, x2:X0, y2:Y1 - 4, stroke:'#173a5e', 'stroke-width':2}));
+    svg.appendChild(svgEl('text', {x:(X0 + X1) / 2, y:233, 'text-anchor':'middle', 'font-size':12, 'font-weight':700, fill:'#173a5e'}, 'Time after impact / ms'));
+    svg.appendChild(svgEl('text', {x:15, y:(Y0 + Y1) / 2, 'text-anchor':'middle', 'font-size':12, 'font-weight':700, fill:'#173a5e', transform:'rotate(-90 15 ' + ((Y0 + Y1) / 2) + ')'}, 'Force on dummy / kN'));
+    if(!res){
+      svg.appendChild(svgEl('text', {x:(X0 + X1) / 2, y:(Y0 + Y1) / 2, 'text-anchor':'middle', 'font-size':13, fill:'#7c8b98'}, 'Run a crash test to see the force on the dummy'));
+      return;
+    }
+    let d = '';
+    res.samples.forEach(function(sm, i){
+      if(sm.t > upto) return;
+      d += (d ? 'L' : 'M') + xs(sm.t * 1000).toFixed(1) + ' ' + ys(sm.F).toFixed(1) + ' ';
+    });
+    if(d) svg.appendChild(svgEl('path', {d:d, fill:'none', stroke:'#c0392b', 'stroke-width':2.2, 'stroke-linejoin':'round'}));
+    if(upto >= res.tEnd){
+      svg.appendChild(svgEl('text', {x:X1 - 4, y:Y1 + 12, 'text-anchor':'end', 'font-size':12, 'font-weight':700, fill:'#c0392b'}, 'Max ' + res.Fmax.toFixed(1) + ' kN' + (res.Fmax > fMax ? ' (off scale)' : '')));
+    }
+  }
+
+  function showResults(res){
+    const rk = res ? risk(res) : null;
+    $('rCZ').textContent = res ? Math.round(res.cz * 100) + ' cm' : '–';
+    $('rSC').textContent = res ? Math.round(res.sc * 100) + ' cm' : '–';
+    $('rD').textContent = res ? Math.round(Math.min(res.sMax, 0.5) * 100) + ' cm' : '–';
+    $('rHit').textContent = res ? (res.hit ? 'Yes' : 'No') : '–';
+    $('rF').textContent = res ? res.Fmax.toFixed(1) + ' kN' : '–';
+    const r = $('rRisk');
+    r.textContent = rk ? rk.text : '–';
+    r.className = rk ? rk.cls : '';
+    $('rSC').className = res && res.sc > 0.005 ? 'risk-high' : '';
+    $('rHit').className = res && res.hit ? 'risk-high' : '';
+  }
+
+  function renderLog(){
+    const tb = $('labLog');
+    if(!log.length){ tb.innerHTML = '<tr class="empty"><td colspan="12">Every crash test you run is added here automatically.</td></tr>'; return; }
+    tb.innerHTML = log.map(function(e, i){
+      return '<tr><td>' + (i + 1) + '</td><td>' + e.type + '</td><td>' + e.v + '</td><td>' + e.L + '</td><td>' + e.Fc + '</td><td>' + e.Fs +
+        '</td><td>' + (e.belt ? e.k : 'off') + '</td><td>' + (e.bag ? e.Fa : 'off') + '</td><td>' + e.cz + '</td><td>' + e.sc +
+        '</td><td><b>' + e.F + '</b></td><td class="' + e.cls + '">' + e.risk + '</td></tr>';
+    }).join('');
+  }
+  function addToLog(p, res){
+    const rk = risk(res);
+    log.push({type:p.type, v:p.v, L:Math.round(p.L * 100), Fc:p.Fc, Fs:p.Fs, belt:p.belt, k:p.k, bag:p.bag, Fa:p.Fa,
+              cz:Math.round(res.cz * 100), sc:Math.round(res.sc * 100), F:res.Fmax.toFixed(1), risk:rk.short, cls:rk.cls});
+    if(log.length > 30) log.shift();
+    renderLog();
+    saveExtraLocal(); scheduleFileWrite();
+  }
+  window.labGetLog = function(){ return log.slice(); };
+  window.labSetLog = function(arr){ log = Array.isArray(arr) ? arr.slice(0, 30) : []; renderLog(); };
+  window.labClearLog = function(){
+    if(log.length && !confirm('Clear your crash test log?')) return;
+    log = []; renderLog(); saveExtraLocal(); scheduleFileWrite();
+  };
+
+  /* ---------- controls ---------- */
+  function syncEnabled(){
+    $('labK').closest('.lab-row').classList.toggle('off', !$('labBeltOn').checked);
+    $('labFa').closest('.lab-row').classList.toggle('off', !$('labBagOn').checked);
+    $('labK').disabled = !$('labBeltOn').checked;
+    $('labFa').disabled = !$('labBagOn').checked;
+    document.querySelector('.lab-num[data-for="labK"]').disabled = !$('labBeltOn').checked;
+    document.querySelector('.lab-num[data-for="labFa"]').disabled = !$('labBagOn').checked;
+  }
+  function resetView(){
+    if(anim){ cancelAnimationFrame(anim); anim = null; }
+    const p = settings();
+    drawOutside(p, 0, 0, 70);
+    drawInside(p, 0, GAP0, 0);
+    $('labHit').style.display = 'none';
+    $('labRun').disabled = false;
+  }
+  document.querySelectorAll('.lab-num').forEach(function(num){
+    const slider = $(num.dataset.for);
+    slider.addEventListener('input', function(){ num.value = slider.value; resetView(); });
+    num.addEventListener('change', function(){
+      let v = parseFloat(num.value);
+      if(isNaN(v)) v = parseFloat(slider.value);
+      v = Math.min(parseFloat(slider.max), Math.max(parseFloat(slider.min), v));
+      slider.value = v; num.value = slider.value; resetView();
+    });
+  });
+  ['labType', 'labBeltOn', 'labBagOn'].forEach(function(id){
+    $(id).addEventListener('change', function(){ syncEnabled(); resetView(); });
+  });
+
+  function run(){
+    resetView();
+    const p = settings();
+    const res = simulate(p);
+    const APPROACH_REAL = 0.8;
+    let start = null;
+    let si = 0;
+    $('labRun').disabled = true;
+    showResults(null);
+    drawGraph(res, 0);
+    function frame(ts){
+      if(start === null) start = ts;
+      const real = (ts - start) / 1000;
+      if(real < APPROACH_REAL){
+        drawOutside(p, 0, 0, 70 * (1 - real / APPROACH_REAL));
+        anim = requestAnimationFrame(frame);
+        return;
+      }
+      const tSim = (real - APPROACH_REAL) / SLOW;
+      while(si < res.samples.length - 1 && res.samples[si + 1].t <= tSim) si++;
+      const sm = res.samples[si];
+      drawOutside(p, sm.cz, sm.sc, 0);
+      drawInside(p, sm.s, sm.gap, Math.min(1, tSim / 0.03));
+      $('labHit').style.display = sm.s > sm.gap ? '' : ($('labHit').style.display);
+      drawGraph(res, tSim);
+      if(tSim >= res.tEnd){
+        anim = null;
+        drawGraph(res, res.tEnd);
+        showResults(res);
+        addToLog(p, res);
+        $('labRun').disabled = false;
+        return;
+      }
+      anim = requestAnimationFrame(frame);
+    }
+    anim = requestAnimationFrame(frame);
+  }
+  $('labRun').addEventListener('click', run);
+  $('labReset').addEventListener('click', function(){ resetView(); showResults(null); drawGraph(null, 0); });
+  window.labSimulate = simulate; // exposed for checking
+  syncEnabled();
+  resetView();
+  drawGraph(null, 0);
 })();
 
 document.addEventListener('DOMContentLoaded', function(){
